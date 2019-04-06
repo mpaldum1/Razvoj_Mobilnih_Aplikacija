@@ -3,9 +3,16 @@ package ba.unsa.etf.rma.klase;
 import java.util.ArrayList;
 
 public class Kviz {
-    String naziv;
-    ArrayList<Pitanje> pitanja = new ArrayList<>();
-    Kategorija kategorija;
+    private  String naziv;
+    private  ArrayList<Pitanje> pitanja = new ArrayList<>();
+
+    public Kviz(String naziv, ArrayList<Pitanje> pitanja, Kategorija kategorija) {
+        this.naziv = naziv;
+        this.pitanja = pitanja;
+        this.kategorija = kategorija;
+    }
+
+    private  Kategorija kategorija;
 
     public String getNaziv() {
         return naziv;

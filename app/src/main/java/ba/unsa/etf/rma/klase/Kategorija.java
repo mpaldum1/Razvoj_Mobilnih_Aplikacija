@@ -1,7 +1,8 @@
 package ba.unsa.etf.rma.klase;
 
 public class Kategorija {
-    String naziv, id;
+
+    private  String naziv, id;
 
     public String getNaziv() {
         return naziv;
