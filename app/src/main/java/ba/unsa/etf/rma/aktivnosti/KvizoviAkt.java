@@ -7,7 +7,7 @@ import android.widget.Spinner;
 
 import ba.unsa.etf.rma.R;
 
-public class KvizAkt extends AppCompatActivity {
+public class KvizoviAkt extends AppCompatActivity {
 
     Spinner postojeceKategorije = (Spinner) findViewById(R.id.spPostojeceKategorije);
     ListView kvizovi = (ListView) findViewById(R.id.lvKvizovi);
@@ -16,6 +16,6 @@ public class KvizAkt extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_kvizovi_akt);
     }
 }
