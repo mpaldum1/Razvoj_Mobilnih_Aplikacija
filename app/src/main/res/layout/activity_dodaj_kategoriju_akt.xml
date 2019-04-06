@@ -5,4 +5,39 @@
     android:layout_height="match_parent"
     tools:context=".aktivnosti.DodajKategorijuAkt">
 
+    <EditText
+        android:id="@+id/etNaziv"
+        android:layout_width="389dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Naziv Kategorije"
+        tools:layout_editor_absoluteX="11dp"
+        tools:layout_editor_absoluteY="34dp" />
+
+    <EditText
+        android:id="@+id/etIkona"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Ikona"
+        tools:layout_editor_absoluteX="11dp"
+        tools:layout_editor_absoluteY="105dp" />
+
+    <Button
+        android:id="@+id/btnDodajIkonu"
+        android:layout_width="172dp"
+        android:layout_height="wrap_content"
+        android:text="Dodaj Ikonu"
+        tools:layout_editor_absoluteX="213dp"
+        tools:layout_editor_absoluteY="105dp" />
+
+    <Button
+        android:id="@+id/btnDodajKategoriju"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:text="Spasi Kategoriju"
+        tools:layout_editor_absoluteX="15dp"
+        tools:layout_editor_absoluteY="201dp" />
 </android.support.constraint.ConstraintLayout>

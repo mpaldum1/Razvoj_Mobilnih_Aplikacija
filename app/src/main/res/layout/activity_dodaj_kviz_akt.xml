@@ -1,29 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".aktivnosti.DodajKvizAkt">
 
-    <EditText
-        android:id="@+id/editText5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Moguca pitanja"
-        tools:layout_editor_absoluteX="99dp"
-        tools:layout_editor_absoluteY="416dp" />
-
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/spKategorije"
         android:layout_width="395dp"
         android:layout_height="36dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="40dp" />
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/etNaziv"
         android:layout_width="391dp"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -33,25 +24,43 @@
         tools:layout_editor_absoluteY="96dp" />
 
     <ListView
+        android:id="@+id/lvDodanaPitanja"
         android:layout_width="382dp"
         android:layout_height="183dp"
         tools:layout_editor_absoluteX="17dp"
-        tools:layout_editor_absoluteY="214dp" />
+        tools:layout_editor_absoluteY="210dp" />
 
     <ListView
+        android:id="@+id/lvMogucaPitanja"
         android:layout_width="378dp"
         android:layout_height="187dp"
         tools:layout_editor_absoluteX="17dp"
-        tools:layout_editor_absoluteY="485dp" />
+        tools:layout_editor_absoluteY="464dp" />
 
-    <EditText
-        android:id="@+id/editText4"
+    <Button
+        android:id="@+id/btnDodajKviz"
+        android:layout_width="366dp"
+        android:layout_height="wrap_content"
+        android:text="Dodaj Kviz"
+        tools:layout_editor_absoluteX="22dp"
+        tools:layout_editor_absoluteY="667dp" />
+
+    <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
+        android:layout_marginEnd="184dp"
+        android:layout_marginRight="184dp"
         android:text="Pitanja u kvizu"
-        tools:layout_editor_absoluteX="99dp"
-        tools:layout_editor_absoluteY="156dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="169dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mouca pitanja"
+        tools:layout_editor_absoluteX="160dp"
+        tools:layout_editor_absoluteY="413dp" />
 
 </android.support.constraint.ConstraintLayout>
