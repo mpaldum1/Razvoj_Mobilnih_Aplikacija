@@ -73,7 +73,7 @@ public class KvizoviAkt extends AppCompatActivity {
                         // Filtriramo
 
                         for (Kviz currentKviz : listaKvizova) {
-                            if (currentKviz.getKategorija().equals(clickedKategorija)) {
+                            if (currentKviz.getKategorija().getId().equals((clickedKategorija.getId()))) {
                                 filterListKvizova.add(currentKviz);
                             }
                         }
