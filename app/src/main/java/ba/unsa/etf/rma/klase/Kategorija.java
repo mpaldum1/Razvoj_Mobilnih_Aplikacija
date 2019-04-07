@@ -1,6 +1,9 @@
 package ba.unsa.etf.rma.klase;
 
-public class Kategorija {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Kategorija implements Parcelable {
 
     private  String naziv, id;
 
@@ -8,6 +11,23 @@ public class Kategorija {
         this.naziv = naziv;
         this.id = id;
     }
+
+    protected Kategorija(Parcel in) {
+        naziv = in.readString();
+        id = in.readString();
+    }
+
+    public static final Creator<Kategorija> CREATOR = new Creator<Kategorija>() {
+        @Override
+        public Kategorija createFromParcel(Parcel in) {
+            return new Kategorija(in);
+        }
+
+        @Override
+        public Kategorija[] newArray(int size) {
+            return new Kategorija[size];
+        }
+    };
 
     public String getNaziv() {
         return naziv;
@@ -29,5 +49,16 @@ public class Kategorija {
     public boolean equals(Object obj) {
         if(obj == null) return false;
         return this.id.equals(((Kategorija)obj).getId());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(naziv);
+        dest.writeString(id);
     }
 }

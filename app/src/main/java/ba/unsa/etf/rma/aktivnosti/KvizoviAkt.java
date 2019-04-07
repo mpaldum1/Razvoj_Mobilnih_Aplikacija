@@ -90,6 +90,8 @@ public class KvizoviAkt extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                intent.putExtra("Pressed kviz", filterListKvizova.get(position));
+                intent.putExtra("Moguce kategorije", listaKategorija);
                 startActivity(intent);
             }
         });
