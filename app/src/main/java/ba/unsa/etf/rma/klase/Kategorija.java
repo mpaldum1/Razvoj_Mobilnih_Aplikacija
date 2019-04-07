@@ -25,5 +25,9 @@ public class Kategorija {
         this.id = id;
     }
 
-
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) return false;
+        return this.id.equals(((Kategorija)obj).getId());
+    }
 }
