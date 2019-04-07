@@ -37,7 +37,12 @@ public class ElementiKvizaAdapter extends ArrayAdapter<Pitanje> {
         ImageView iwKategorija = (ImageView) convertView.findViewById(R.id.iwKategorija);
 
         twPitanje.setText(pitanje.getNaziv());
-        iwKategorija.setImageResource(R.drawable.circle);
+        if(pitanje.getNaziv().equals("Dodaj pitanje")){
+            iwKategorija.setImageResource(R.drawable.plus);
+        }
+        else {
+            iwKategorija.setImageResource(R.drawable.circle);
+        }
 
         return  convertView;
     }

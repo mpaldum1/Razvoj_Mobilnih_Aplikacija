@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -92,10 +93,37 @@ public class KvizoviAkt extends AppCompatActivity {
                 Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                 intent.putExtra("Pressed kviz", filterListKvizova.get(position));
                 intent.putExtra("Moguce kategorije", listaKategorija);
-                startActivity(intent);
+                startActivityForResult(intent, 1);
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                Kviz povratniKviz = data.getParcelableExtra("Povratni kviz");
+                Kategorija povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
+
+                if (povratniKviz != null && povratnaKategorija != null) {
+
+                    povratniKviz.setKategorija(povratnaKategorija);
+                    Kviz zamjena = listaKvizova.get(listaKvizova.size() - 1);
+
+                    listaKvizova.set(listaKvizova.size() - 1,povratniKviz);
+                    filterListKvizova.set(filterListKvizova.size() - 1, povratniKviz);
+
+                    listaKvizova.add(zamjena);
+                    filterListKvizova.add(zamjena);
+
+                    adapterKviz.notifyDataSetChanged();
+                }
+            }
+        }
+    }
+
 
     public void dodajKviz(Kviz kviz) {
         if (kviz != null) {
