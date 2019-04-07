@@ -4,6 +4,11 @@ public class Kategorija {
 
     private  String naziv, id;
 
+    public Kategorija(String naziv, String id) {
+        this.naziv = naziv;
+        this.id = id;
+    }
+
     public String getNaziv() {
         return naziv;
     }
@@ -19,4 +24,6 @@ public class Kategorija {
     public void setId(String id) {
         this.id = id;
     }
+
+
 }

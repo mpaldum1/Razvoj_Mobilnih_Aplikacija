@@ -37,7 +37,7 @@ public class KvizAdapter extends ArrayAdapter<Kviz> {
     ImageView iwKategorija = (ImageView) convertView.findViewById(R.id.iwKategorija);
 
     twKviz.setText(kviz.getNaziv());
-      //  iwKategorija.setImageResource(kviz.getKategorija().hashCode());
+    iwKategorija.setImageResource(Integer.parseInt(kviz.getKategorija().getId()));
 
         return  convertView;
     }
