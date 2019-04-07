@@ -113,13 +113,19 @@ public class KvizoviAkt extends AppCompatActivity {
                     povratniKviz.setKategorija(povratnaKategorija);
                     Kviz zamjena = listaKvizova.get(listaKvizova.size() - 1);
 
-                    listaKvizova.set(listaKvizova.size() - 1,povratniKviz);
+                    listaKvizova.set(listaKvizova.size() - 1, povratniKviz);
                     filterListKvizova.set(filterListKvizova.size() - 1, povratniKviz);
 
                     listaKvizova.add(zamjena);
                     filterListKvizova.add(zamjena);
-
                     adapterKviz.notifyDataSetChanged();
+                    adapterKategorija.notifyDataSetChanged();
+
+                    KvizAdapter novi = new KvizAdapter(this, R.layout.row_view, filterListKvizova);
+                    lwkvizovi.setAdapter(novi);
+                    KategorijaAdapter noviADK = new KategorijaAdapter(this, listaKategorija);
+                    spPostojeceKategorije.setAdapter(noviADK);
+
                 }
             }
         }

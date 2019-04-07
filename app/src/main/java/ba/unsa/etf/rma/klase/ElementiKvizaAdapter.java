@@ -14,37 +14,33 @@ import ba.unsa.etf.rma.R;
 
 public class ElementiKvizaAdapter extends ArrayAdapter<Pitanje> {
 
-    private Context context;
     private int resource = R.layout.row_view;
-    private ArrayList<Pitanje> pitanja = new ArrayList<>();
 
-    public ElementiKvizaAdapter (Context context, int resource, ArrayList<Pitanje> pitanja){
-        super(context, resource, pitanja);
-        this.resource= resource;
-        this.context = context;
-        this.pitanja = pitanja;
+    public ElementiKvizaAdapter(Context context, int resource, ArrayList<Pitanje> pitanja) {
+        super(context, 0, pitanja);
     }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        Pitanje pitanje = pitanja.get(position);
 
-        if(convertView == null){
-            convertView = LayoutInflater.from(context).inflate(resource, parent, false);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(resource, parent, false);
         }
 
-        TextView twPitanje = (TextView) convertView.findViewById(R.id.kviz);
-        ImageView iwKategorija = (ImageView) convertView.findViewById(R.id.iwKategorija);
+        Pitanje currPitanje = getItem(position);
+        TextView nazivPitanja = convertView.findViewById(R.id.kviz);
+        ImageView iwKategorija = convertView.findViewById(R.id.iwKategorija);
 
-        twPitanje.setText(pitanje.getNaziv());
-        if(pitanje.getNaziv().equals("Dodaj pitanje")){
-            iwKategorija.setImageResource(R.drawable.plus);
-        }
-        else {
-            iwKategorija.setImageResource(R.drawable.circle);
+        if (currPitanje != null) {
+            nazivPitanja.setText(currPitanje.getNaziv());
+            if (currPitanje.getNaziv().equals("Dodaj pitanje")) {
+                iwKategorija.setImageResource(R.drawable.plus);
+            } else {
+                iwKategorija.setImageResource(R.drawable.circle);
+            }
         }
 
-        return  convertView;
+        return convertView;
     }
 }
 

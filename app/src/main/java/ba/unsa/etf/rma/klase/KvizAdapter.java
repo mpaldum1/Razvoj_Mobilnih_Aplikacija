@@ -28,16 +28,17 @@ public class KvizAdapter extends ArrayAdapter<Kviz> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
     Kviz kviz = kvizovi.get(position);
+    View itemView = convertView;
 
     if(convertView == null){
         convertView = LayoutInflater.from(context).inflate(resource, parent, false);
     }
 
-    TextView twKviz = (TextView) convertView.findViewById(R.id.kviz);
-    ImageView iwKategorija = (ImageView) convertView.findViewById(R.id.iwKategorija);
+        TextView twKviz = (TextView) convertView.findViewById(R.id.kviz);
+        ImageView iwKategorija = (ImageView) convertView.findViewById(R.id.iwKategorija);
 
-    twKviz.setText(kviz.getNaziv());
-    iwKategorija.setImageResource(Integer.parseInt(kviz.getKategorija().getId()));
+        twKviz.setText(kviz.getNaziv());
+        iwKategorija.setImageResource(Integer.parseInt(kviz.getKategorija().getId()));
 
         return  convertView;
     }
