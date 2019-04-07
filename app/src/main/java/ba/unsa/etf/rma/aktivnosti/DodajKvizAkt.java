@@ -36,7 +36,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
     private ArrayList<Pitanje> listaPitanja;
     private ArrayList<Kategorija> listaKategorija;
-    private  ArrayList<Kviz> listaKvizova;
+    private ArrayList<Kviz> listaKvizova;
     private Kviz trenutniKviz, temporalKviz;
 
     private Pitanje dodajPitanje;
@@ -142,7 +142,6 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaPitanja.add(zamjena);
 
                 adapterElementiKviza.notifyDataSetChanged();
-
             }
         }
 

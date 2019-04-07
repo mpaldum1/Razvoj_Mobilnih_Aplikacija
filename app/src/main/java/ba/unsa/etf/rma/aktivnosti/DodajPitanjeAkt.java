@@ -1,10 +1,12 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -80,7 +82,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
             public void onClick(View v) {
 
                 clear();
-                if (validationCkeck()) {
+                if (validationCkeck() && !tacanOdgovor.equals("")) {
 
                     povratnoPitanje = new Pitanje(nazivPitanja, nazivPitanja, odgovor, listaOdgovora);
                     Intent returnIntent = new Intent();
@@ -91,8 +93,25 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 }
             }
         });
-    }
 
+        lvOdgovori.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (!listaOdgovora.isEmpty()) {
+                    String clickedPitanje = (String) parent.getItemAtPosition(position);
+
+                    if (clickedPitanje.equals(tacanOdgovor)) {
+                        tacanIma = false;
+                        tacanOdgovor = "";
+                    }
+
+                    listaOdgovora.remove(parent.getItemAtPosition(position));
+                    adapterOdgovori.notifyDataSetChanged();
+                }
+            }
+        });
+
+    }
 
     private void init() {
 
@@ -110,9 +129,12 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text = (TextView) view.findViewById(android.R.id.text1);
 
-                if (flag) {
+                if (flag && tacanIma) {
                     text.setTextColor(getResources().getColor(R.color.tacanOdgovor));
                     flag = false;
+                }
+                else {
+                    text.setTextColor(Color.BLACK);
                 }
                 return view;
             }
