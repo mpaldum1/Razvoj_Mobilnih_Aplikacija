@@ -7,20 +7,26 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
+import ba.unsa.etf.rma.klase.KategorijaAdapter;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.KvizAdapter;
 
 public class KvizoviAkt extends AppCompatActivity {
 
-    private Spinner postojeceKategorije;
+    private Spinner spPostojeceKategorije;
     private ListView lwkvizovi;
+
     private ArrayList<Kviz> listaKvizova;
-    private KvizAdapter adapter;
+    private ArrayList<Kategorija> listaKategorija;
+    private KvizAdapter adapterKviz;
+    private KategorijaAdapter adapterKategorija;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,16 +34,32 @@ public class KvizoviAkt extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kvizovi_akt);
 
-
-        postojeceKategorije = (Spinner) findViewById(R.id.spPostojeceKategorije);
+        spPostojeceKategorije = (Spinner) findViewById(R.id.spPostojeceKategorije);
         lwkvizovi = (ListView) findViewById(R.id.lvKvizovi);
-        listaKvizova = new ArrayList<>();
 
-        final Kviz dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
-        listaKvizova.add(dodajKviz);
+        initSpinner();
+        initList();
 
-        adapter = new KvizAdapter(this, R.layout.row_view, listaKvizova);
-        lwkvizovi.setAdapter(adapter);
+        adapterKviz = new KvizAdapter(this, R.layout.row_view, listaKvizova);
+        adapterKategorija = new KategorijaAdapter(this, listaKategorija);
+
+        lwkvizovi.setAdapter(adapterKviz);
+        spPostojeceKategorije.setAdapter(adapterKategorija);
+
+        spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Kategorija clickedKategorija = (Kategorija) parent.getItemAtPosition(position);
+                String clickedKategorijaNaziv = clickedKategorija.getNaziv();
+
+                Toast.makeText(KvizoviAkt.this, clickedKategorijaNaziv, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         lwkvizovi.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -48,9 +70,20 @@ public class KvizoviAkt extends AppCompatActivity {
         });
     }
 
-    void dodajKviz (Kviz kviz){
+    public void dodajKviz (Kviz kviz){
         if(kviz != null) {
             listaKvizova.add(kviz);
         }
+    }
+
+    private void initSpinner(){
+        listaKategorija = new ArrayList<>();
+        listaKategorija.add(new Kategorija("Kategorija", "-1"));
+    }
+
+    private void initList(){
+        listaKvizova = new ArrayList<>();
+        final Kviz dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
+        listaKvizova.add(dodajKviz);
     }
 }
