@@ -8,32 +8,31 @@
 
     <Spinner
         android:id="@+id/spPostojeceKategorije"
-        android:layout_width="395dp"
+        android:layout_width="348dp"
         android:layout_height="44dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="35dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="14dp"
-        app:layout_constraintBottom_toTopOf="@+id/lvKvizovi"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        tools:layout_editor_absoluteY="17dp" />
 
     <ListView
         android:id="@+id/lvKvizovi"
-        android:layout_width="395dp"
-        android:layout_height="630dp"
+        android:layout_width="0dp"
+        android:layout_height="496dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spPostojeceKategorije" />
+        app:layout_constraintTop_toBottomOf="@+id/spPostojeceKategorije"
+        app:layout_constraintVertical_bias="0.52" />
 
 </android.support.constraint.ConstraintLayout>
