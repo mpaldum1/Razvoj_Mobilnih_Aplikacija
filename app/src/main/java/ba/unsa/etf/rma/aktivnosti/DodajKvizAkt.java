@@ -63,7 +63,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         etNaziv = (EditText) findViewById(R.id.etNaziv);
         btnDodajKviz = (Button) findViewById(R.id.btnDodajKviz);
 
-        if(!trenutniKviz.getNaziv().equals("Dodaj kviz")) {
+        if (!trenutniKviz.getNaziv().equals("Dodaj kviz")) {
             etNaziv.setText(trenutniKviz.getNaziv());
             listaPitanja = trenutniKviz.getPitanja();
 
@@ -82,7 +82,6 @@ public class DodajKvizAkt extends AppCompatActivity {
             listaPitanja = trenutniKviz.getPitanja();
             listaPitanja.add(dodajPitanje);
         }
-
 
 
         spKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
@@ -123,7 +122,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                 Pitanje temp = (Pitanje) parent.getItemAtPosition(position);
 
-                if ( temp != null && temp.getNaziv().equals("Dodaj pitanje")) {
+                if (temp != null && temp.getNaziv().equals("Dodaj pitanje")) {
                     Intent intent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
                     intent.putExtra("Kvizovi", listaKvizova);
                     intent.putExtra("Pressed kviz", listaPitanja.get(position));
@@ -135,17 +134,20 @@ public class DodajKvizAkt extends AppCompatActivity {
         btnDodajKviz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // ukljuciti validaciju i dodati kategoriju i pitanja
-                trenutniKviz.setNaziv(etNaziv.getText().toString());
-                trenutniKviz.setPitanja(listaPitanja);
 
-                adapterElementiKviza.notifyDataSetChanged();
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra("Povratni kviz", trenutniKviz);
-                returnIntent.putExtra("Povratna kategorija", trenutnaKategorija);
+                clear();
+                if (validationCkeck()) {
+                    trenutniKviz.setNaziv(etNaziv.getText().toString());
+                    trenutniKviz.setPitanja(listaPitanja);
 
-                setResult(RESULT_OK, returnIntent);
-                finish();
+                    adapterElementiKviza.notifyDataSetChanged();
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra("Povratni kviz", trenutniKviz);
+                    returnIntent.putExtra("Povratna kategorija", trenutnaKategorija);
+
+                    setResult(RESULT_OK, returnIntent);
+                    finish();
+                }
 
             }
         });
@@ -199,6 +201,23 @@ public class DodajKvizAkt extends AppCompatActivity {
             listaPitanja.add(dodajPitanje);
         }
 
+    }
+
+    private boolean validationCkeck() {
+
+        boolean correct = true;
+        String naziv = etNaziv.getText().toString();
+
+        if (naziv.equals("")) {
+            this.getWindow().getDecorView().findViewById(R.id.etNaziv).setBackgroundResource(R.color.colorRedValidation);
+            correct = false;
+        }
+
+        return correct;
+    }
+
+    private void clear() {
+        etNaziv.setBackgroundResource(android.R.drawable.edit_text);
     }
 
 }
