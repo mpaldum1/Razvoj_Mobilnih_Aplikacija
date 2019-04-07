@@ -93,6 +93,7 @@ public class KvizoviAkt extends AppCompatActivity {
                 Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                 intent.putExtra("Pressed kviz", filterListKvizova.get(position));
                 intent.putExtra("Moguce kategorije", listaKategorija);
+                intent.putExtra("Kvizovi", listaKvizova);
                 startActivityForResult(intent, 1);
             }
         });

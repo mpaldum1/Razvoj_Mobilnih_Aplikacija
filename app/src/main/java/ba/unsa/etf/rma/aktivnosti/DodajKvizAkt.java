@@ -3,6 +3,7 @@ package ba.unsa.etf.rma.aktivnosti;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -35,6 +36,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
     private ArrayList<Pitanje> listaPitanja;
     private ArrayList<Kategorija> listaKategorija;
+    private  ArrayList<Kviz> listaKvizova;
     private Kviz trenutniKviz, temporalKviz;
 
     private Pitanje dodajPitanje;
@@ -75,13 +77,15 @@ public class DodajKvizAkt extends AppCompatActivity {
                     if (clickedKategorija.getId().equals("0")) {                                            // Pritisnuto "Dodaj Kategoriju"
 
                         Intent intent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
-                        intent.putExtra("Pressed kviz", listaKategorija.get(position));
+                        intent.putExtra("Pressed kategorije", listaKategorija.get(position));
                         startActivityForResult(intent, 2);
 
                     } else {
                         temporalKviz.setKategorija(clickedKategorija);
+                        adapterKategorija.notifyDataSetChanged();
                     }
                 }
+
             }
 
             @Override
@@ -97,6 +101,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                 if (((Pitanje) parent.getItemAtPosition(position)).getNaziv().equals("Dodaj pitanje")) {
                     Intent intent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
+                    intent.putExtra("Kvizovi",listaKvizova);
                     intent.putExtra("Pressed kviz", listaPitanja.get(position));
                     startActivityForResult(intent, 1);
                 }
@@ -122,6 +127,36 @@ public class DodajKvizAkt extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == 1){
+            if(resultCode == RESULT_OK){
+                Pitanje povratnoPitanje = data.getParcelableExtra("Povratno pitanje");
+                Pitanje zamjena = listaPitanja.get(listaPitanja.size() - 1);
+
+                listaPitanja.set(listaPitanja.size() - 1, povratnoPitanje);
+                listaPitanja.add(zamjena);
+
+                adapterElementiKviza.notifyDataSetChanged();
+
+            }
+        }
+
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+
+                Kategorija povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
+
+                listaKategorija.add(povratnaKategorija);
+                adapterKategorija.notifyDataSetChanged();
+
+
+            }
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
