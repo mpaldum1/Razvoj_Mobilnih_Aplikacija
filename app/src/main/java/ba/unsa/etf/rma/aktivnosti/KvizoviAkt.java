@@ -18,6 +18,9 @@ import ba.unsa.etf.rma.klase.KategorijaAdapter;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.KvizAdapter;
 
+
+// test branch
+
 public class KvizoviAkt extends AppCompatActivity {
 
     private Spinner spPostojeceKategorije;
