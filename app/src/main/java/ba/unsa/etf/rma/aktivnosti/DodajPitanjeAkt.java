@@ -26,9 +26,9 @@ public class DodajPitanjeAkt extends AppCompatActivity {
     private Button btnDodajOdgovor, btnDodajTacan, btnDodajPitanje;
 
     private ArrayAdapter<String> adapterOdgovori;
-    private ArrayList<Kviz> listaKvizova;
+    private ArrayList<Kviz> listaKvizova = new ArrayList<>();
 
-    private ArrayList<String> listaOdgovora;
+    private ArrayList<String> listaOdgovora = new ArrayList<>();
     private String odgovor = "";
 
     private Pitanje povratnoPitanje;
@@ -36,18 +36,21 @@ public class DodajPitanjeAkt extends AppCompatActivity {
     private String tacanOdgovor;
 
 
-    boolean flag = false;
-    boolean tacanIma = false;
+    boolean flag = false;                       // da li je u pitanju tacan odgovor
+    boolean tacanIma = false;                   // da li i dalje u listi imamo tacan odgovor
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_pitanje_akt);
 
-        init();
+        init();                                 // inicijalizacija
+
         Intent povratniIntent = getIntent();
         listaKvizova = povratniIntent.getParcelableArrayListExtra("Kvizovi");
+        lvOdgovori.setAdapter(adapterOdgovori);
 
 
         btnDodajOdgovor.setOnClickListener(new View.OnClickListener() {
@@ -105,7 +108,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                         tacanOdgovor = "";
                     }
 
-                    listaOdgovora.remove(parent.getItemAtPosition(position));
+                    listaOdgovora.remove(lvOdgovori.getItemAtPosition(position));
                     adapterOdgovori.notifyDataSetChanged();
                 }
             }
@@ -115,6 +118,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
 
     private void init() {
 
+        // bindamo sve elemente
         lvOdgovori = findViewById(R.id.lvOdgovori);
         etNaziv = findViewById(R.id.etNaziv);
         etOdgovor = findViewById(R.id.etOdgovor);
@@ -122,16 +126,16 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         btnDodajTacan = findViewById(R.id.btnDodajTacan);
         btnDodajPitanje = findViewById(R.id.btnDodajPitanje);
 
-        listaOdgovora = new ArrayList<>();
+        // adapter liste odgovora
         adapterOdgovori = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listaOdgovora) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
+
                 View view = super.getView(position, convertView, parent);
                 TextView text = (TextView) view.findViewById(android.R.id.text1);
 
-                if (flag && tacanIma) {
+                if (flag && tacanIma && listaOdgovora.get(position).equals(tacanOdgovor)) {                     // imamo li tacan odgovor
                     text.setTextColor(getResources().getColor(R.color.tacanOdgovor));
-                    flag = false;
                 }
                 else {
                     text.setTextColor(Color.BLACK);
@@ -139,11 +143,6 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 return view;
             }
         };
-
-        lvOdgovori.setAdapter(adapterOdgovori);
-
-        listaKvizova = new ArrayList<>();
-
     }
 
     private boolean validationCkeck() {

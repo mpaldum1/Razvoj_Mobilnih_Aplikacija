@@ -26,15 +26,16 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_kategoriju_akt);
 
-
         init();
+
         Intent intent = getIntent();
         listaKategorija = intent.getParcelableArrayListExtra("Pressed kategorije");
-        etIkona.setFocusable(false);                // onemogucen unos
 
+        etIkona.setFocusable(false);                // onemogucen unos
         IconDialog iconDialog = new IconDialog();
 
         btnDodajIkonu.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +68,8 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
     }
 
     private void init() {
+        // pocetno stanje
+
         etNaziv = (EditText) findViewById(R.id.etNaziv);
         etIkona = (EditText) findViewById(R.id.etIkona);
         btnDodajIkonu = (Button) findViewById(R.id.btnDodajIkonu);
