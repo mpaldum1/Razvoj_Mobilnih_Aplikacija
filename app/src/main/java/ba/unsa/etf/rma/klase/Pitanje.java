@@ -4,13 +4,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Pitanje implements Parcelable {
     String naziv, tekstPitanja, tacan;
-    List<String> odgovori = new ArrayList<>();
+    ArrayList<String> odgovori = new ArrayList<>();
 
-    public Pitanje(String naziv, String tekstPitanja, String tacan, List<String> odgovori) {
+    public Pitanje(String naziv, String tekstPitanja, String tacan, ArrayList<String> odgovori) {
         this.naziv = naziv;
         this.tekstPitanja = tekstPitanja;
         this.tacan = tacan;
@@ -64,14 +65,14 @@ public class Pitanje implements Parcelable {
         return odgovori;
     }
 
-    public void setOdgovori(List<String> odgovori) {
+    public void setOdgovori(ArrayList<String> odgovori) {
         this.odgovori = odgovori;
     }
 
-    ArrayList<String> dajRandomOdgovore () {
-        ArrayList<String> odgovori = new ArrayList<>();
-
-        return odgovori;
+    public  ArrayList<String> dajRandomOdgovore () {
+        ArrayList<String> result = odgovori;
+        Collections.shuffle(result);
+        return result;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package ba.unsa.etf.rma.klase;
+package ba.unsa.etf.rma.adapteri;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,6 +14,7 @@ import com.maltaisn.icondialog.IconHelper;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
+import ba.unsa.etf.rma.klase.Kviz;
 
 public class KvizAdapter extends ArrayAdapter<Kviz> {
 
@@ -30,7 +31,8 @@ public class KvizAdapter extends ArrayAdapter<Kviz> {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        Kviz kviz = kvizovi.get(position);
+
+        Kviz kviz = getItem(position);
 
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(resource, parent, false);
@@ -45,7 +47,7 @@ public class KvizAdapter extends ArrayAdapter<Kviz> {
         helper.addLoadCallback(new IconHelper.LoadCallback() {
             @Override
             public void onDataLoaded() {
-                if(!kviz.getKategorija().getId().equals("-1") && icon != null)
+                if(icon != null)
                 iwKategorija.setImageDrawable(icon.getDrawable(context));
             }
         });
@@ -54,7 +56,7 @@ public class KvizAdapter extends ArrayAdapter<Kviz> {
         if(kviz.getNaziv().equals("Dodaj kviz")){
             iwKategorija.setImageResource(R.drawable.plus);
         }
-        else {
+        else if(Integer.parseInt(kviz.getKategorija().getId()) < 0) {
             iwKategorija.setImageResource(R.drawable.circle);
         }
 

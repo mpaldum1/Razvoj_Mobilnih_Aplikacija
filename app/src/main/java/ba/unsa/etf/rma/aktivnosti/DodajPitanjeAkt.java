@@ -61,6 +61,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 if (validationCkeckDodaj()) {
                     listaOdgovora.add(etOdgovor.getText().toString());
                     adapterOdgovori.notifyDataSetChanged();
+                    etOdgovor.setText("");
                 }
             }
         });
@@ -76,6 +77,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                     flag = true;
                     tacanIma = true;
                     adapterOdgovori.notifyDataSetChanged();
+                    etOdgovor.setText("");
                 }
             }
         });
