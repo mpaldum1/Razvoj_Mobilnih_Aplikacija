@@ -12,11 +12,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
-import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
 public class DodajPitanjeAkt extends AppCompatActivity {
@@ -26,9 +26,9 @@ public class DodajPitanjeAkt extends AppCompatActivity {
     private Button btnDodajOdgovor, btnDodajTacan, btnDodajPitanje;
 
     private ArrayAdapter<String> adapterOdgovori;
-    private ArrayList<Kviz> listaKvizova = new ArrayList<>();
 
     private ArrayList<String> listaOdgovora = new ArrayList<>();
+    private ArrayList<Pitanje> listaPitanja = new ArrayList<>();
     private String odgovor = "";
 
     private Pitanje povratnoPitanje;
@@ -49,7 +49,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         init();                                 // inicijalizacija
 
         Intent povratniIntent = getIntent();
-        listaKvizova = povratniIntent.getParcelableArrayListExtra("Kvizovi");
+        listaPitanja = povratniIntent.getParcelableArrayListExtra("Lista pitanja");
         lvOdgovori.setAdapter(adapterOdgovori);
 
 
@@ -164,16 +164,17 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         }
 
 
-        if (listaKvizova != null) {
-            for (Kviz trenutni : listaKvizova) {
+
+            for (Pitanje trenutni : listaPitanja) {
                 if (trenutni.getNaziv().equals(nazivPitanja)) {
                     correct = false;
                     this.getWindow().getDecorView().findViewById(R.id.etNaziv).setBackgroundResource(R.color.colorRedValidation);
+                    Toast.makeText(this,"Unesite jedinstveni naziv pitanja kviza", Toast.LENGTH_SHORT).show();
                     // ime mora biti jedinstveno
                     break;
                 }
             }
-        }
+
         return correct;
     }
 

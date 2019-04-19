@@ -54,9 +54,13 @@ public class DodajKvizAkt extends AppCompatActivity {
 
         initialize();
 
+        listaKategorija.removeIf(kategorija -> kategorija.getId().equals("-2"));                 //pritisnuto neko pitanje
+        listaKategorija.add(new Kategorija("Dodaj kategoriju", "-2"));
+
         int positionKategorija = 0;
         if (!trenutniKviz.getNaziv().equals("Dodaj kviz")) {                                          // pritisnuto dodaj kviz
             etNaziv.setText(trenutniKviz.getNaziv());
+
 
             for(Kviz trenutni: listaKvizova){
                 if(trenutni.getNaziv().equals(trenutniKviz.getNaziv())) {
@@ -72,14 +76,6 @@ public class DodajKvizAkt extends AppCompatActivity {
             }
 
         } else {
-
-            if(listaKategorija != null) {
-                listaKategorija.removeIf(kategorija -> kategorija.getId().equals("-2"));                 //pritisnuto neko pitanje
-                listaKategorija.add(new Kategorija("Dodaj kategoriju", "-2"));
-            }
-            else {
-                listaKategorija = new ArrayList<>();
-            }
 
             if (listaPitanja == null) {
                 listaPitanja = new ArrayList<>();
@@ -101,12 +97,11 @@ public class DodajKvizAkt extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
-                String clickedKategorijaNaziv = trenutnaKategorija.getNaziv();
 
                 if (trenutnaKategorija.getId().equals("-1")) {
                     // empty
                 } else {
-                    Toast.makeText(DodajKvizAkt.this, clickedKategorijaNaziv, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DodajKvizAkt.this, trenutniKviz.getNaziv(), Toast.LENGTH_SHORT).show();
 
                     if (trenutnaKategorija.getId().equals("-2")) {                                            // Pritisnuto "Dodaj Kategoriju"
 
@@ -134,9 +129,9 @@ public class DodajKvizAkt extends AppCompatActivity {
                 if (temp.getNaziv().equals("Dodaj pitanje")) {
 
                     Intent intent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
-                    intent.putExtra("Kvizovi", listaKvizova);
-                    intent.putExtra("Pressed kviz", listaPitanja.get(position));
+                    intent.putExtra("Lista pitanja", listaPitanja);
                     startActivityForResult(intent, 3);
+
                 } else {
                     listaPitanja.remove(adapterPitanja.getItem(position));
                     adapterPitanja.notifyDataSetChanged();
