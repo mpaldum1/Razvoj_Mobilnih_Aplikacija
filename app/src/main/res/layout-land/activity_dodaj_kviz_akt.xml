@@ -11,10 +11,11 @@
         android:layout_width="0dp"
         android:layout_height="38dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
@@ -22,41 +23,49 @@
 
     <EditText
         android:id="@+id/etNaziv"
-        android:layout_width="203dp"
-        android:layout_height="43dp"
-        android:layout_marginTop="12dp"
+        android:layout_width="311dp"
+        android:layout_height="44dp"
         android:layout_marginEnd="15dp"
+        android:layout_marginBottom="8dp"
         android:ems="10"
         android:hint="Naziv kviza - INPUT"
         android:inputType="textPersonName"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintHorizontal_bias="0.078"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spKategorije" />
+        app:layout_constraintTop_toBottomOf="@+id/spKategorije"
+        app:layout_constraintVertical_bias="0.029" />
 
     <ListView
         android:id="@+id/lvDodanaPitanja"
         android:layout_width="0dp"
-        android:layout_height="146dp"
+        android:layout_height="57dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ListView
         android:id="@+id/lvMogucaPitanja"
         android:layout_width="0dp"
-        android:layout_height="122dp"
+        android:layout_height="45dp"
         android:layout_marginStart="28dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.538"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/btnDodajKviz"
@@ -65,7 +74,6 @@
         android:layout_marginStart="22dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:text="Dodaj Kviz"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -77,28 +85,34 @@
     <TextView
         android:id="@+id/textView2"
         android:layout_width="343dp"
-        android:layout_height="29dp"
+        android:layout_height="20dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="Pitanja u kvizu"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/etNaziv" />
+        app:layout_constraintTop_toBottomOf="@+id/etNaziv"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="337dp"
-        android:layout_height="28dp"
+        android:layout_height="20dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="Moguca pitanja"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.019"
         app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/lvDodanaPitanja" />
+        app:layout_constraintTop_toBottomOf="@+id/lvDodanaPitanja"
+        app:layout_constraintVertical_bias="0.035" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline"
@@ -109,15 +123,18 @@
 
     <Button
         android:id="@+id/btnImportKviz"
-        android:layout_width="115dp"
+        android:layout_width="0dp"
         android:layout_height="43dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="Import kviz"
+        app:layout_constraintBottom_toBottomOf="@+id/btnDodajKviz"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.208"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/etNaziv"
-        app:layout_constraintTop_toBottomOf="@+id/spKategorije" />
+        app:layout_constraintTop_toBottomOf="@+id/spKategorije"
+        app:layout_constraintVertical_bias="0.0" />
 
 </android.support.constraint.ConstraintLayout>

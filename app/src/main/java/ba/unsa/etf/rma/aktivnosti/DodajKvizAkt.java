@@ -1,6 +1,10 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,6 +18,11 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
@@ -30,6 +39,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private ListView lvMogucaPitanja;
     private EditText etNaziv;
     private Button btnDodajKviz;
+    private Button btnImportKviz;
 
     private KategorijaAdapter adapterKategorija;
     private ElementiKvizaAdapter adapterPitanja;
@@ -42,6 +52,9 @@ public class DodajKvizAkt extends AppCompatActivity {
 
     private Kviz trenutniKviz;
     private Kategorija trenutnaKategorija;
+    private Kategorija dodajKategoriju;
+
+    private static final int READ_REQUEST_CODE = 42;
 
     public DodajKvizAkt() {
     }
@@ -53,23 +66,26 @@ public class DodajKvizAkt extends AppCompatActivity {
         setContentView(R.layout.activity_dodaj_kviz_akt);
 
         initialize();
+                                                                                           //pritisnuto neko pitanje
 
-        listaKategorija.removeIf(kategorija -> kategorija.getId().equals("-2"));                 //pritisnuto neko pitanje
-        listaKategorija.add(new Kategorija("Dodaj kategoriju", "-2"));
+        dodajKategoriju = new Kategorija("Dodaj kategoriju", "-3");
+        if(!listaKategorija.contains(dodajKategoriju)) {
+            listaKategorija.add(dodajKategoriju);
+        }
 
         int positionKategorija = 0;
         if (!trenutniKviz.getNaziv().equals("Dodaj kviz")) {                                          // pritisnuto dodaj kviz
             etNaziv.setText(trenutniKviz.getNaziv());
 
 
-            for(Kviz trenutni: listaKvizova){
-                if(trenutni.getNaziv().equals(trenutniKviz.getNaziv())) {
+            for (Kviz trenutni : listaKvizova) {
+                if (trenutni.getNaziv().equals(trenutniKviz.getNaziv())) {
                     trenutni.setNaziv("");
                 }
             }
 
-            for(Kategorija trenutna :listaKategorija){
-                if(trenutna.getId().equals(trenutnaKategorija.getId())){                              // postavljamo spinner na kategoriju kviza
+            for (Kategorija trenutna : listaKategorija) {
+                if (trenutna.getId().equals(trenutnaKategorija.getId())) {                              // postavljamo spinner na kategoriju kviza
                     break;
                 }
                 positionKategorija++;
@@ -101,9 +117,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 if (trenutnaKategorija.getId().equals("-1")) {
                     // empty
                 } else {
-                    Toast.makeText(DodajKvizAkt.this, trenutniKviz.getNaziv(), Toast.LENGTH_SHORT).show();
-
-                    if (trenutnaKategorija.getId().equals("-2")) {                                            // Pritisnuto "Dodaj Kategoriju"
+                    if (trenutnaKategorija.getId().equals("-3")) {                                            // Pritisnuto "Dodaj Kategoriju"
 
                         Intent intent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
                         intent.putExtra("Pressed kategorije", listaKategorija.get(position));
@@ -184,8 +198,16 @@ public class DodajKvizAkt extends AppCompatActivity {
             }
         });
 
+        btnImportKviz.setOnClickListener(new View.OnClickListener() {                               //importujemo kviz
+            @Override
+            public void onClick(View v) {
+                searchTextDocuments();
+            }
+        });
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -210,7 +232,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                 povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
 
-                if(povratnaKategorija != null) {
+                if (povratnaKategorija != null) {
                     Kategorija zamjena = listaKategorija.get(listaKategorija.size() - 1);            //'Svi ostaje na kraju
                     listaKategorija.remove(listaKategorija.size() - 1);
 
@@ -222,6 +244,75 @@ public class DodajKvizAkt extends AppCompatActivity {
                     spKategorije.setSelection(listaKategorija.indexOf(trenutnaKategorija));
                 }
 
+            }
+        }
+
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+
+            Uri uri = null;
+            if (data != null) {
+                uri = data.getData();
+
+                if(validationDatoteka(uri)) {
+
+                    try {
+                        InputStream inputStream = getContentResolver().openInputStream(uri);
+                        BufferedReader reader = null;
+                        reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                        String fetcher = "";
+                        String[] lineFile;
+                        int linePosition = 0;
+
+                        if (inputStream != null) {
+                            for (; ; ) {
+                                fetcher = reader.readLine();
+                                if (fetcher == null) {                                                   //dosli smo do kraja datoteke
+                                    break;
+                                }
+                                if (fetcher.equals("")) {
+                                    continue;
+                                }
+                                lineFile = fetcher.split(",");                                                 // u pitanju je csv datoteka
+
+                                if (linePosition == 0) {                                                            // prvi red datoteke
+                                    etNaziv.setText(lineFile[0]);
+                                    Kategorija trenutna = new Kategorija(lineFile[1], "694");                   // proizvoljan id kategorije
+
+                                    if (listaKategorija.contains(trenutna)) {
+                                        spKategorije.setSelection(listaKategorija.indexOf(trenutna));
+                                    } else {
+
+                                        Kategorija zamjena = listaKategorija.get(listaKategorija.size() - 1);            //Nova kategorija u pitanju
+                                        listaKategorija.remove(listaKategorija.size() - 1);
+
+                                        trenutnaKategorija = trenutna;
+                                        listaKategorija.add(trenutna);
+                                        listaKategorija.add(zamjena);
+
+                                        adapterKategorija.notifyDataSetChanged();
+                                        spKategorije.setSelection(listaKategorija.indexOf(trenutnaKategorija));
+                                    }
+                                } else {
+                                    Pitanje trenutno = new Pitanje(lineFile[0], lineFile[0], lineFile[2], null);
+                                    int brojOdgovora = Integer.parseInt(lineFile[1].replaceAll("\\s+", ""));
+                                    ArrayList<String> lineOdgovori = new ArrayList<>();
+                                    for (int i = 0; i < brojOdgovora; i++) {
+                                        lineOdgovori.add(lineFile[3 + i]);
+                                    }
+
+                                    trenutno.setOdgovori(lineOdgovori);
+                                    listaPitanja.add(listaPitanja.size() - 1, trenutno);
+                                }
+                                linePosition++;
+                            }
+                        }
+                        inputStream.close();
+
+                    } catch (IOException e) {
+                        // do nothing
+                    }
+                }
             }
         }
     }
@@ -243,6 +334,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         lvMogucaPitanja = findViewById(R.id.lvMogucaPitanja);
         etNaziv = findViewById(R.id.etNaziv);
         btnDodajKviz = findViewById(R.id.btnDodajKviz);
+        btnImportKviz = findViewById(R.id.btnImportKviz);
 
         listaMogucihPitanja = new ArrayList<>();
 
@@ -282,7 +374,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private boolean validationCheckKategorija() {
         etNaziv.setBackgroundResource(android.R.drawable.edit_text);
         boolean correct = true;
-        if (trenutnaKategorija == null || Integer.parseInt(trenutnaKategorija.getId()) < 0) {
+        if (trenutnaKategorija == null || !trenutnaKategorija.getId().equals("-2") && Integer.parseInt(trenutnaKategorija.getId()) < 0) {
             Toast.makeText(this, "Unesite kategoriju kviza", Toast.LENGTH_SHORT).show();
             this.getWindow().getDecorView().findViewById(R.id.spKategorije).setBackgroundResource(R.color.colorRedValidation);
             correct = false;
@@ -295,4 +387,149 @@ public class DodajKvizAkt extends AppCompatActivity {
         spKategorije.setBackgroundResource(android.R.drawable.spinner_background);
     }
 
+    private void searchTextDocuments() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/*");
+        startActivityForResult(intent, READ_REQUEST_CODE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private boolean validationDatoteka(Uri uri) {                            // validacija datoteke
+
+        boolean result = true;
+
+        InputStream inputStream = null;
+        try {
+            inputStream = getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        BufferedReader reader = null;
+        reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        String fetcher = "";
+        String[] lineFile;
+        int linePosition = 0;
+        ArrayList<String> naziviPitanjaUDatoteci = new ArrayList<>();
+
+        if (inputStream != null) {
+            for (;;) {
+                try {
+                    fetcher = reader.readLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (fetcher == null) {                                                   //dosli smo do kraja datoteke
+                    break;
+                }
+                if (fetcher.equals("")) {
+                    continue;
+                }
+                lineFile = fetcher.split(",");                                                // u pitanju je csv datoteka
+
+                if (linePosition == 0) {                                                            // prvi red datoteke
+
+                    final String potvrda = lineFile[0];
+                    if (listaKvizova.stream().anyMatch(kviz -> kviz.getNaziv().equals(potvrda))) {         // imamo li vec isti kviz
+                        dialogValidation("Kviz kojeg importujete već postoji!");
+                        return false;
+                    }
+
+                    int brojPitanja = Integer.parseInt(lineFile[2].replaceAll("\\s+",""));
+                    int brojLinija = fileLinesCount(uri);
+
+                    if (lineFile.length != 3) {
+                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
+                        return false;
+                    }
+
+                    if (brojLinija - 1 != brojPitanja) {
+                        dialogValidation("Kviz kojeg importujete ima neispravan broj pitanja!");
+                        return false;
+                    }
+
+                } else {
+
+                    int brojOdgovora = Integer.parseInt(lineFile[1].replaceAll("\\s+",""));
+                    int tacanOdgovor = Integer.parseInt(lineFile[2].replaceAll("\\s+",""));
+
+                    if (lineFile.length < 4) {
+                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
+                        return false;
+                    }
+                    if (brojOdgovora + 3 != lineFile.length) {
+                        dialogValidation("Kviz kojeg importujete ima neispravan broj odgovora!");
+                        return false;
+                    }
+                    if (tacanOdgovor < 0 || tacanOdgovor >= lineFile.length - 3) {
+                        dialogValidation("Kviz kojeg importujete ima neispravan index tačnog odgovora!");
+                        return false;
+                    }
+                    final String nazivTrenutnogPitanja = lineFile[0];
+                    if (listaPitanja.stream().anyMatch(pitanje -> pitanje.getNaziv().equals(nazivTrenutnogPitanja))
+                    || naziviPitanjaUDatoteci.contains(nazivTrenutnogPitanja)) {
+                        dialogValidation("U datoteci se nalaze postojeća pitanja!");
+                        return false;
+                    }
+
+                    ArrayList<String> listaOdgovora = new ArrayList<>();
+
+                    for(int i = 3; i < lineFile.length; i++){
+                        if(listaOdgovora.contains(lineFile[i])) {
+                            dialogValidation("Pitanje u kvizu ima iste odgovore!");
+                            return false;
+                        }
+                        listaOdgovora.add(lineFile[i]);
+                    }
+                    // provjeriti sta treba raditi ukoliko imamo vise istih pitanja ili odgovora
+                    naziviPitanjaUDatoteci.add(nazivTrenutnogPitanja);
+                }
+                linePosition++;
+            }
+        }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    private void dialogValidation(String message) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Upozorenje!");
+        alertDialog.setMessage(message);
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();                                                              // otpusti upozorenje
+                    }
+                });
+        alertDialog.show();
+    }
+
+    private int fileLinesCount(Uri uri) {
+        // brojimo redove
+        int counter = 0;
+        InputStream inputStream = null;
+        try {
+            inputStream = getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        try {
+            while (reader.readLine() != null) counter++;
+            reader.close();
+        } catch (IOException e) {
+            //do nothing
+        }
+
+        return counter;
+    }
 }

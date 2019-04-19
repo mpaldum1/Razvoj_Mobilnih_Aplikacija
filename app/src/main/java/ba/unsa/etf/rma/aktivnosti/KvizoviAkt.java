@@ -160,6 +160,9 @@ public class KvizoviAkt extends AppCompatActivity {
                     adapterKviz.notifyDataSetChanged();
                 }
             }
+
+            trenutnaKategorija = listaKategorija.get(listaKategorija.size()-1);
+            spPostojeceKategorije.setSelection(listaKategorija.size()-1);
         }
     }
 
