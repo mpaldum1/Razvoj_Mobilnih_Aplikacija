@@ -66,10 +66,10 @@ public class DodajKvizAkt extends AppCompatActivity {
         setContentView(R.layout.activity_dodaj_kviz_akt);
 
         initialize();
-                                                                                           //pritisnuto neko pitanje
+        //pritisnuto neko pitanje
 
         dodajKategoriju = new Kategorija("Dodaj kategoriju", "-3");
-        if(!listaKategorija.contains(dodajKategoriju)) {
+        if (!listaKategorija.contains(dodajKategoriju)) {
             listaKategorija.add(dodajKategoriju);
         }
 
@@ -164,11 +164,13 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaMogucihPitanja.remove(adapterMogucaPitanja.getItem(position));
                 adapterMogucaPitanja.notifyDataSetChanged();
 
-                Pitanje dodaj = listaPitanja.get(listaPitanja.size() - 1);
-                listaPitanja.remove(listaPitanja.size() - 1);
-                listaPitanja.add(temp);
-                listaPitanja.add(dodaj);
-                adapterPitanja.notifyDataSetChanged();
+                if (!listaPitanja.contains(temp)) {
+                    Pitanje dodaj = listaPitanja.get(listaPitanja.size() - 1);
+                    listaPitanja.remove(listaPitanja.size() - 1);
+                    listaPitanja.add(temp);
+                    listaPitanja.add(dodaj);
+                    adapterPitanja.notifyDataSetChanged();
+                }
             }
         });
 
@@ -253,7 +255,7 @@ public class DodajKvizAkt extends AppCompatActivity {
             if (data != null) {
                 uri = data.getData();
 
-                if(validationDatoteka(uri)) {
+                if (validationDatoteka(uri)) {
 
                     try {
                         InputStream inputStream = getContentResolver().openInputStream(uri);
@@ -267,7 +269,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                         if (inputStream != null) {
                             for (; ; ) {
                                 fetcher = reader.readLine();
-                                if (fetcher == null) {                                                   //dosli smo do kraja datoteke
+                                if (fetcher == null) {                                                               //dosli smo do kraja datoteke
                                     break;
                                 }
                                 if (fetcher.equals("")) {
@@ -415,7 +417,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         ArrayList<String> naziviPitanjaUDatoteci = new ArrayList<>();
 
         if (inputStream != null) {
-            for (;;) {
+            for (; ; ) {
                 try {
                     fetcher = reader.readLine();
                 } catch (IOException e) {
@@ -429,7 +431,12 @@ public class DodajKvizAkt extends AppCompatActivity {
                 }
                 lineFile = fetcher.split(",");                                                // u pitanju je csv datoteka
 
-                if (linePosition == 0) {                                                            // prvi red datoteke
+                if (linePosition == 0) {                                                             // prvi red datoteke
+
+                    if (lineFile.length != 3) {
+                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
+                        return false;
+                    }
 
                     final String potvrda = lineFile[0];
                     if (listaKvizova.stream().anyMatch(kviz -> kviz.getNaziv().equals(potvrda))) {         // imamo li vec isti kviz
@@ -437,13 +444,9 @@ public class DodajKvizAkt extends AppCompatActivity {
                         return false;
                     }
 
-                    int brojPitanja = Integer.parseInt(lineFile[2].replaceAll("\\s+",""));
+                    int brojPitanja = Integer.parseInt(lineFile[2].replaceAll("\\s+", ""));
                     int brojLinija = fileLinesCount(uri);
 
-                    if (lineFile.length != 3) {
-                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
-                        return false;
-                    }
 
                     if (brojLinija - 1 != brojPitanja) {
                         dialogValidation("Kviz kojeg importujete ima neispravan broj pitanja!");
@@ -452,8 +455,8 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                 } else {
 
-                    int brojOdgovora = Integer.parseInt(lineFile[1].replaceAll("\\s+",""));
-                    int tacanOdgovor = Integer.parseInt(lineFile[2].replaceAll("\\s+",""));
+                    int brojOdgovora = Integer.parseInt(lineFile[1].replaceAll("\\s+", ""));
+                    int tacanOdgovor = Integer.parseInt(lineFile[2].replaceAll("\\s+", ""));
 
                     if (lineFile.length < 4) {
                         dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
@@ -469,15 +472,15 @@ public class DodajKvizAkt extends AppCompatActivity {
                     }
                     final String nazivTrenutnogPitanja = lineFile[0];
                     if (listaPitanja.stream().anyMatch(pitanje -> pitanje.getNaziv().equals(nazivTrenutnogPitanja))
-                    || naziviPitanjaUDatoteci.contains(nazivTrenutnogPitanja)) {
+                            || naziviPitanjaUDatoteci.contains(nazivTrenutnogPitanja)) {
                         dialogValidation("U datoteci se nalaze postojeća pitanja!");
                         return false;
                     }
 
                     ArrayList<String> listaOdgovora = new ArrayList<>();
 
-                    for(int i = 3; i < lineFile.length; i++){
-                        if(listaOdgovora.contains(lineFile[i])) {
+                    for (int i = 3; i < lineFile.length; i++) {
+                        if (listaOdgovora.contains(lineFile[i])) {
                             dialogValidation("Pitanje u kvizu ima iste odgovore!");
                             return false;
                         }
@@ -524,7 +527,13 @@ public class DodajKvizAkt extends AppCompatActivity {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
         try {
-            while (reader.readLine() != null) counter++;
+            String temp = reader.readLine();
+            while (temp != null) {
+                if (!temp.equals("")) {
+                    counter++;
+                }
+                temp = reader.readLine();
+            }
             reader.close();
         } catch (IOException e) {
             //do nothing
