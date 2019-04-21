@@ -5,4 +5,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorRedValidation">#ff4500</color>
     <color name="tacanOdgovor">#32CD32</color>
+    <color name="crvena">#FF3030</color>
+    <color name="zelena">#7FFF00</color>
 </resources>

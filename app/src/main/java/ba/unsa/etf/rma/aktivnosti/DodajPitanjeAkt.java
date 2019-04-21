@@ -89,7 +89,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 clear();
                 if (validationCkeck() && !tacanOdgovor.equals("")) {
 
-                    povratnoPitanje = new Pitanje(nazivPitanja, nazivPitanja, odgovor, listaOdgovora);
+                    povratnoPitanje = new Pitanje(nazivPitanja, nazivPitanja, tacanOdgovor, listaOdgovora);
                     Intent returnIntent = new Intent();
                     returnIntent.putExtra("Povratno pitanje", povratnoPitanje);
 

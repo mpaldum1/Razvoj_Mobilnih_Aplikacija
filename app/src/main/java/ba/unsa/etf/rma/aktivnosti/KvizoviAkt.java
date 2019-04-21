@@ -97,11 +97,11 @@ public class KvizoviAkt extends AppCompatActivity {
             }
         });
 
-        lwkvizovi.setOnItemClickListener(new AdapterView.OnItemClickListener() {                           // listView listener
+        lwkvizovi.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Kviz trenutni = adapterKviz.getItem(position);
+
 
                 Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                 intent.putExtra("Pressed kviz", trenutni);
@@ -110,6 +110,32 @@ public class KvizoviAkt extends AppCompatActivity {
                 intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
                 intent.putExtra("Pitanja kviza", trenutni.getPitanja());
                 startActivityForResult(intent, 1);
+
+                return true;
+            }
+        });
+
+        lwkvizovi.setOnItemClickListener(new AdapterView.OnItemClickListener() {                           // listView listener
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Kviz trenutni = adapterKviz.getItem(position);
+                Intent intent = null;
+
+                if (trenutni.getNaziv().equals("Dodaj kviz")) {
+                    intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                    intent.putExtra("Pressed kviz", trenutni);
+                    intent.putExtra("Moguce kategorije", listaKategorija);
+                    intent.putExtra("Kvizovi", listaKvizova);
+                    intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
+                    intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                    startActivityForResult(intent, 1);
+                } else {
+                    intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
+                    intent.putExtra("Odabrani kviz", trenutni);
+                    intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                    startActivityForResult(intent, 2);
+                }
             }
         });
     }
@@ -122,10 +148,10 @@ public class KvizoviAkt extends AppCompatActivity {
         if (requestCode == 1) {                         //povratak iz dodaj kviz aktivnosti
             if (resultCode == RESULT_OK) {
 
-               Kviz povratniKviz = data.getParcelableExtra("Povratni kviz");
-               Kategorija povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
-               ArrayList<Kategorija> povratneKategorije = data.getParcelableArrayListExtra("Povratne kategorije");
-               ArrayList<Pitanje> povratnaPitanja = data.getParcelableArrayListExtra("Povratna pitanja");
+                Kviz povratniKviz = data.getParcelableExtra("Povratni kviz");
+                Kategorija povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
+                ArrayList<Kategorija> povratneKategorije = data.getParcelableArrayListExtra("Povratne kategorije");
+                ArrayList<Pitanje> povratnaPitanja = data.getParcelableArrayListExtra("Povratna pitanja");
 
 
                 Kategorija zamjena = listaKategorija.get(listaKategorija.size() - 1);            //'Svi ostaje na kraju
@@ -161,8 +187,8 @@ public class KvizoviAkt extends AppCompatActivity {
                 }
             }
 
-            trenutnaKategorija = listaKategorija.get(listaKategorija.size()-1);
-            spPostojeceKategorije.setSelection(listaKategorija.size()-1);
+            trenutnaKategorija = listaKategorija.get(listaKategorija.size() - 1);
+            spPostojeceKategorije.setSelection(listaKategorija.size() - 1);
         }
     }
 
