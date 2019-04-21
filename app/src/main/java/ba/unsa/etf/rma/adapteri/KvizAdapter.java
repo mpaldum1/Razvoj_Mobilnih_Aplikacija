@@ -19,7 +19,7 @@ import ba.unsa.etf.rma.klase.Kviz;
 public class KvizAdapter extends ArrayAdapter<Kviz> {
 
     private Context context;
-    private int resource = R.layout.row_view;
+        private int resource = R.layout.row_view;
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
 
     public KvizAdapter(Context context, int resource, ArrayList<Kviz> kvizovi) {

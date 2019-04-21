@@ -1,13 +1,17 @@
 package ba.unsa.etf.rma.aktivnosti;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -17,11 +21,14 @@ import java.util.ArrayList;
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.adapteri.KategorijaAdapter;
 import ba.unsa.etf.rma.adapteri.KvizAdapter;
+import ba.unsa.etf.rma.fragmenti.DetailFrag;
+import ba.unsa.etf.rma.fragmenti.DetailFrag.OnFragmentInteractionListener;
+import ba.unsa.etf.rma.fragmenti.ListaFrag;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class KvizoviAkt extends AppCompatActivity {
+public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener{
 
     private Spinner spPostojeceKategorije;
     private ListView lwkvizovi;
@@ -35,6 +42,10 @@ public class KvizoviAkt extends AppCompatActivity {
     private Kategorija trenutnaKategorija;
 
     private Kviz dodajKviz;
+    private boolean sirokiL = false;
+
+    private ListFragment listFragment;
+    private DetailFrag detailFrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,101 +54,133 @@ public class KvizoviAkt extends AppCompatActivity {
         setContentView(R.layout.activity_kvizovi_akt);
 
         init();
+        FragmentManager manager = getSupportFragmentManager();
+        FrameLayout ldetalji = (FrameLayout) findViewById(R.id.listPlace);
 
-        adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
-        adapterKategorija = new KategorijaAdapter(this, listaKategorija);
+        if (ldetalji != null) {                                  // u prosirenom modu smo
+            sirokiL = true;
+            listFragment = (ListFragment) manager.findFragmentById(R.id.listPlace);
 
-        lwkvizovi.setAdapter(adapterKviz);
-        spPostojeceKategorije.setAdapter(adapterKategorija);
+            if (listFragment == null) {
+                listFragment = new ListFragment();
+                Bundle arguments = new Bundle();
+                arguments.putParcelableArrayList("Kvizovi", listaKvizova);
+                arguments.putParcelableArrayList("Kategorije", listaKategorija);
+                listFragment.setArguments(arguments);
+                manager.beginTransaction().replace(R.id.listPlace, listFragment).commit();
+            }
+
+            detailFrag = (DetailFrag) manager.findFragmentById(R.id.detailPlace);
+
+            if (detailFrag == null) {
+                detailFrag = new DetailFrag();
+                Bundle arguments = new Bundle();
+                arguments.putParcelableArrayList("Kvizovi", listaKvizova);
+                arguments.putParcelableArrayList("Kategorija", listaKategorija);
+                detailFrag.setArguments(arguments);
+                manager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
+            }
+
+        } else {
+
+            manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+            adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
+            adapterKategorija = new KategorijaAdapter(this, listaKategorija);
+
+            lwkvizovi.setAdapter(adapterKviz);
+            spPostojeceKategorije.setAdapter(adapterKategorija);
 
 
-        spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
-                String clickedKategorijaNaziv = trenutnaKategorija.getNaziv();
+                    trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
+                    String clickedKategorijaNaziv = trenutnaKategorija.getNaziv();
 
-                if (trenutnaKategorija.getId().equals("-1")) {                                              //pritisnuto Kategorije
-                    // empty
-                } else {
-                    Toast.makeText(KvizoviAkt.this, clickedKategorijaNaziv, Toast.LENGTH_SHORT).show();
-
-                    if (trenutnaKategorija.getId().equals("-2")) {// Pritisnuto "Sve"
-
-                        filterListKvizova.removeAll(filterListKvizova);
-
-                        filterListKvizova.addAll(listaKvizova);
-                        for (Kviz currentKviz : listaKvizova) {
-                            if (!filterListKvizova.contains(currentKviz)) {
-                                filterListKvizova.add(currentKviz);
-                            }
-                        }
-                        adapterKviz.notifyDataSetChanged();
-
+                    if (trenutnaKategorija.getId().equals("-1")) {                                              //pritisnuto Kategorije
+                        // empty
                     } else {
+                        Toast.makeText(KvizoviAkt.this, clickedKategorijaNaziv, Toast.LENGTH_SHORT).show();
 
-                        filterListKvizova.removeAll(filterListKvizova);
-                        // Filtriramo
+                        if (trenutnaKategorija.getId().equals("-2")) {// Pritisnuto "Sve"
 
-                        for (Kviz currentKviz : listaKvizova) {
-                            if (currentKviz.getKategorija().getId().equals((trenutnaKategorija.getId()))) {
-                                filterListKvizova.add(currentKviz);
+                            filterListKvizova.removeAll(filterListKvizova);
+
+                            filterListKvizova.addAll(listaKvizova);
+                            for (Kviz currentKviz : listaKvizova) {
+                                if (!filterListKvizova.contains(currentKviz)) {
+                                    filterListKvizova.add(currentKviz);
+                                }
                             }
+                            adapterKviz.notifyDataSetChanged();
+
+                        } else {
+
+                            filterListKvizova.removeAll(filterListKvizova);
+                            // Filtriramo
+
+                            for (Kviz currentKviz : listaKvizova) {
+                                if (currentKviz.getKategorija().getId().equals((trenutnaKategorija.getId()))) {
+                                    filterListKvizova.add(currentKviz);
+                                }
+                            }
+                            filterListKvizova.add(dodajKviz);
+                            adapterKviz.notifyDataSetChanged();
                         }
-                        filterListKvizova.add(dodajKviz);
-                        adapterKviz.notifyDataSetChanged();
                     }
                 }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // do nothing
-            }
-        });
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // do nothing
+                }
+            });
 
-        lwkvizovi.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Kviz trenutni = adapterKviz.getItem(position);
+            lwkvizovi.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    Kviz trenutni = adapterKviz.getItem(position);
 
 
-                Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
-                intent.putExtra("Pressed kviz", trenutni);
-                intent.putExtra("Moguce kategorije", listaKategorija);
-                intent.putExtra("Kvizovi", listaKvizova);
-                intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
-                intent.putExtra("Pitanja kviza", trenutni.getPitanja());
-                startActivityForResult(intent, 1);
-
-                return true;
-            }
-        });
-
-        lwkvizovi.setOnItemClickListener(new AdapterView.OnItemClickListener() {                           // listView listener
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Kviz trenutni = adapterKviz.getItem(position);
-                Intent intent = null;
-
-                if (trenutni.getNaziv().equals("Dodaj kviz")) {
-                    intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                    Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                     intent.putExtra("Pressed kviz", trenutni);
                     intent.putExtra("Moguce kategorije", listaKategorija);
                     intent.putExtra("Kvizovi", listaKvizova);
                     intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
                     intent.putExtra("Pitanja kviza", trenutni.getPitanja());
                     startActivityForResult(intent, 1);
-                } else {
-                    intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
-                    intent.putExtra("Odabrani kviz", trenutni);
-                    intent.putExtra("Pitanja kviza", trenutni.getPitanja());
-                    startActivityForResult(intent, 2);
+
+                    return true;
                 }
-            }
-        });
+            });
+
+            lwkvizovi.setOnItemClickListener(new AdapterView.OnItemClickListener() {                           // listView listener
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                    Kviz trenutni = adapterKviz.getItem(position);
+                    Intent intent = null;
+
+                    if (trenutni.getNaziv().equals("Dodaj kviz")) {
+                        intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                        intent.putExtra("Pressed kviz", trenutni);
+                        intent.putExtra("Moguce kategorije", listaKategorija);
+                        intent.putExtra("Kvizovi", listaKvizova);
+                        intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
+                        intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                        startActivityForResult(intent, 1);
+                    } else {
+                        intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
+                        intent.putExtra("Odabrani kviz", trenutni);
+                        intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                        startActivityForResult(intent, 2);
+                    }
+                }
+            });
+
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -210,4 +253,13 @@ public class KvizoviAkt extends AppCompatActivity {
         filterListKvizova.add(dodajKviz);
     }
 
+    @Override
+    public void onInputA(String nazivKategorije) {
+        detailFrag.filtrirajIPrikazi(nazivKategorije);
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 }
