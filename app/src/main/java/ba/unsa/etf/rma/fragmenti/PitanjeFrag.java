@@ -210,8 +210,9 @@ public class PitanjeFrag extends Fragment {
         int moreToGo = trenutniKviz.getPitanja().size() - brojPitanja - 1;
         procenatTacnihOdgovora = 100 * (brojTacnihOdgovora.doubleValue()) / (brojPitanja + 1);
         procenatTacnihOdgovora = Math.round(procenatTacnihOdgovora * 10) / 10.;
-        mListener.onInputB(brojTacnihOdgovora.toString(), Integer.toString(moreToGo), procenatTacnihOdgovora.toString());
-
+        if (mListener != null) {
+            mListener.onInputB(brojTacnihOdgovora.toString(), Integer.toString(moreToGo), procenatTacnihOdgovora.toString());
+        }
         if (brojPitanja < trenutniKviz.getPitanja().size() - 1) {
             brojPitanja++;
             trenutnoPitanje = listaPitanja.get(brojPitanja);

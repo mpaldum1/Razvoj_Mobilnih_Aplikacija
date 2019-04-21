@@ -4,18 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".aktivnosti.IgrajKvizAkt">
+    tools:context=".aktivnosti.IgrajKvizAkt"
+    android:weightSum="1">
 
     <FrameLayout
         android:id="@+id/fragment_informacije"
         android:layout_width="match_parent"
         android:layout_height="25dp"
-        android:layout_weight="0.80"></FrameLayout>
+        android:layout_weight="0.5"></FrameLayout>
 
     <FrameLayout
         android:id="@+id/fragment_pitanje"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:layout_weight="1"></FrameLayout>
+        android:layout_weight="0.5"></FrameLayout>
 
 </LinearLayout>

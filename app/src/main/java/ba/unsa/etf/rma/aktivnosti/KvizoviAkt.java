@@ -28,7 +28,7 @@ import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener{
+public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener {
 
     private Spinner spPostojeceKategorije;
     private ListView lwkvizovi;
@@ -53,37 +53,11 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kvizovi_akt);
 
-        init();
-        FragmentManager manager = getSupportFragmentManager();
-        FrameLayout ldetalji = (FrameLayout) findViewById(R.id.listPlace);
-
-        if (ldetalji != null) {                                  // u prosirenom modu smo
-            sirokiL = true;
-            listFragment = (ListFragment) manager.findFragmentById(R.id.listPlace);
-
-            if (listFragment == null) {
-                listFragment = new ListFragment();
-                Bundle arguments = new Bundle();
-                arguments.putParcelableArrayList("Kvizovi", listaKvizova);
-                arguments.putParcelableArrayList("Kategorije", listaKategorija);
-                listFragment.setArguments(arguments);
-                manager.beginTransaction().replace(R.id.listPlace, listFragment).commit();
-            }
-
-            detailFrag = (DetailFrag) manager.findFragmentById(R.id.detailPlace);
-
-            if (detailFrag == null) {
-                detailFrag = new DetailFrag();
-                Bundle arguments = new Bundle();
-                arguments.putParcelableArrayList("Kvizovi", listaKvizova);
-                arguments.putParcelableArrayList("Kategorija", listaKategorija);
-                detailFrag.setArguments(arguments);
-                manager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
-            }
-
+        spPostojeceKategorije = (Spinner) findViewById(R.id.spPostojeceKategorije);
+        if (spPostojeceKategorije == null) {
+            fragmentCall();
         } else {
-
-            manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            init();
 
             adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
             adapterKategorija = new KategorijaAdapter(this, listaKategorija);
@@ -179,8 +153,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     }
                 }
             });
-
         }
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -235,6 +209,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
     }
 
+
     public void init() {
 
         spPostojeceKategorije = (Spinner) findViewById(R.id.spPostojeceKategorije);                 //pripremamo pocetno stanje
@@ -261,5 +236,36 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    private void fragmentCall() {
+        FragmentManager manager = getSupportFragmentManager();
+        FrameLayout ldetalji = (FrameLayout) findViewById(R.id.listPlace);
+
+        if (ldetalji != null) {                                  // u prosirenom modu smo
+            sirokiL = true;
+            listFragment = (ListFragment) manager.findFragmentById(R.id.listPlace);
+
+            if (listFragment == null) {
+                listFragment = new ListFragment();
+                Bundle arguments = new Bundle();
+                arguments.putParcelableArrayList("Kvizovi", listaKvizova);
+                arguments.putParcelableArrayList("Kategorije", listaKategorija);
+                listFragment.setArguments(arguments);
+                manager.beginTransaction().replace(R.id.listPlace, listFragment).commit();
+            }
+        }
+        detailFrag = (DetailFrag) manager.findFragmentById(R.id.detailPlace);
+
+        if (detailFrag == null) {
+            detailFrag = new DetailFrag();
+            Bundle arguments = new Bundle();
+            arguments.putParcelableArrayList("Kvizovi", listaKvizova);
+            arguments.putParcelableArrayList("Kategorija", listaKategorija);
+            detailFrag.setArguments(arguments);
+            manager.beginTransaction().replace(R.id.detailPlace, detailFrag).commit();
+        } else {
+            manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
     }
 }

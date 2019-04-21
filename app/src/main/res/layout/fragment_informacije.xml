@@ -67,10 +67,10 @@
             android:text="Naziv kviza:"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/infNazivKviza"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.084" />
+            app:layout_constraintVertical_bias="0.014" />
 
         <TextView
             android:id="@+id/infProcenatTacni"
@@ -87,7 +87,7 @@
             app:layout_constraintHorizontal_bias="0.967"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/infBrojPreostalihPitanja"
-            app:layout_constraintVertical_bias="0.058" />
+            app:layout_constraintVertical_bias="0.042" />
 
         <TextView
             android:id="@+id/infBrojPreostalihPitanja"
@@ -104,7 +104,7 @@
             app:layout_constraintHorizontal_bias="0.967"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/infBrojTacnihPitanja"
-            app:layout_constraintVertical_bias="0.038" />
+            app:layout_constraintVertical_bias="0.026" />
 
         <TextView
             android:id="@+id/infBrojTacnihPitanja"
@@ -138,7 +138,7 @@
             app:layout_constraintHorizontal_bias="0.967"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.084" />
+            app:layout_constraintVertical_bias="0.012" />
 
         <Button
             android:id="@+id/btnKraj"
