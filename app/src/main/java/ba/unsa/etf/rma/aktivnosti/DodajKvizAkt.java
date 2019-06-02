@@ -31,6 +31,9 @@ import ba.unsa.etf.rma.adapteri.KategorijaAdapter;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
+import ba.unsa.etf.rma.servisi.InsertUBazu;
+
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
 public class DodajKvizAkt extends AppCompatActivity {
 
@@ -53,6 +56,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private Kviz trenutniKviz;
     private Kategorija trenutnaKategorija;
     private Kategorija dodajKategoriju;
+
 
     private static final int READ_REQUEST_CODE = 42;
 
@@ -225,6 +229,14 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaPitanja.set(listaPitanja.size() - 1, povratnoPitanje);
                 listaPitanja.add(zamjena);
 
+                InsertUBazu insertUBazu = new InsertUBazu();
+
+                insertUBazu.setToken(token);
+                insertUBazu.setPitanje(povratnoPitanje);
+                insertUBazu.setOdgovori((ArrayList<String>) povratnoPitanje.getOdgovori());
+                insertUBazu.setMethod("POST");
+                insertUBazu.setNazivKolekcije("Pitanja");
+                insertUBazu.execute();
                 adapterPitanja.notifyDataSetChanged();
             }
         }
@@ -244,6 +256,15 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                     adapterKategorija.notifyDataSetChanged();
                     spKategorije.setSelection(listaKategorija.indexOf(trenutnaKategorija));
+
+                    InsertUBazu insertUBazu = new InsertUBazu();
+
+                    insertUBazu.setToken(token);
+                    insertUBazu.setKategorija(trenutnaKategorija);
+                    insertUBazu.setMethod("POST");
+                    insertUBazu.setNazivKolekcije("Kategorije");
+                    insertUBazu.execute();
+
                 }
 
             }

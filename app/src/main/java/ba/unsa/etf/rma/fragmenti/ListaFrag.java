@@ -1,10 +1,13 @@
 package ba.unsa.etf.rma.fragmenti;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,21 +16,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ListaFrag.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ListaFrag#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ListaFrag extends Fragment {
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "Kvizovi";
@@ -38,23 +33,14 @@ public class ListaFrag extends Fragment {
 
     private OnFragmentInteractionListener mListener;
     private ArrayList<String> listaImenaKategorija = new ArrayList<>();
-    private ArrayList<Kategorija> listaKategorija = new ArrayList<>();
     private ArrayList<Kviz> listaKvizova = new ArrayList<>();
-
+    private ArrayList<Kategorija> listaKategorija = new ArrayList<>();
     private ListView lvListaKategorija;
 
     public ListaFrag() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ListaFrag.
-     */
     // TODO: Rename and change types and number of parameters
     public static ListaFrag newInstance(String param1, String param2) {
         ListaFrag fragment = new ListaFrag();
@@ -68,12 +54,15 @@ public class ListaFrag extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        listaImenaKategorija.add("hahaah");
-        listaImenaKategorija.add("hahaah");
+
+
         if (getArguments() != null) {
-            listaKvizova = getArguments().getParcelableArrayList(ARG_PARAM1);
+            listaKvizova= getArguments().getParcelable(ARG_PARAM1);
             listaKategorija = getArguments().getParcelableArrayList(ARG_PARAM2);
+
         }
+
+        Log.e("Cetvrti", "ListaFrag onCreate");
     }
 
     @Override
@@ -83,14 +72,14 @@ public class ListaFrag extends Fragment {
         return inflater.inflate(R.layout.fragment_lista, container, false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         initialize();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(Objects.requireNonNull(getContext()),
-                android.R.layout.simple_list_item_1, listaImenaKategorija);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),android.R.layout.simple_list_item_1, listaImenaKategorija);
         lvListaKategorija.setAdapter(adapter);
 
         lvListaKategorija.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -126,16 +115,6 @@ public class ListaFrag extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onInputA(String nazivKategorije);
@@ -145,6 +124,5 @@ public class ListaFrag extends Fragment {
     private void initialize() {
         lvListaKategorija = getView().findViewById(R.id.listaKategorija);
     }
-
 
 }
