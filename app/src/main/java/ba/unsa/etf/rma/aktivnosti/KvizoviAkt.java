@@ -23,9 +23,17 @@ import android.widget.Toast;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.collect.Lists;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
@@ -37,7 +45,12 @@ import ba.unsa.etf.rma.fragmenti.ListaFrag;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
+import ba.unsa.etf.rma.servisi.FetchKategorijeBaza;
+import ba.unsa.etf.rma.servisi.FetchKvizove;
+import ba.unsa.etf.rma.servisi.FetchPitanjaBaza;
 import ba.unsa.etf.rma.servisi.InsertUBazu;
+
+import static ba.unsa.etf.rma.servisi.FetchPitanjaBaza.streamToStringConvertor;
 
 
 public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener {
@@ -47,6 +60,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
     private ArrayList<Kviz> listaKvizova = new ArrayList<>();
     private ArrayList<Kategorija> listaKategorija = new ArrayList<>();
+    private ArrayList<Pitanje> listaPitanja = new ArrayList<>();
     private KvizAdapter adapterKviz;
     private KategorijaAdapter adapterKategorija;
 
@@ -63,6 +77,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
     private InsertUBazu insertUBazu = new InsertUBazu();
     private boolean isPatch = false;
+    private ArrayList<String> pitanjaIdMaska = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,12 +225,13 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     if (!listaKategorija.contains(trenutna) && Integer.parseInt(trenutna.getId()) >= 0) {
                         listaKategorija.add(trenutna);
 
-                        insertUBazu.setToken(token);
+                        InsertUBazu insertUBazu1 = new InsertUBazu();
+                        insertUBazu1.setToken(token);
 
-                        insertUBazu.setNazivKolekcije("Kategorije");
-                        insertUBazu.setKategorija(trenutna);
+                        insertUBazu1.setNazivKolekcije("Kategorije");
+                        insertUBazu1.setKategorija(trenutna);
 
-                        insertUBazu.execute();
+                        insertUBazu1.execute();
                     }
                 }
 
@@ -248,6 +264,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     if (isPatch) {
                         insertUBazu.setMethod("PATCH");
+
                         insertUBazu.setIdStarogKviza(povratniKviz.getNaziv());
                     } else {
 
@@ -263,8 +280,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
             trenutnaKategorija = listaKategorija.get(listaKategorija.size() - 1);
             spPostojeceKategorije.setSelection(listaKategorija.size() - 1);
-
-
         }
     }
 
@@ -283,6 +298,18 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         filterListKvizova.add(dodajKviz);
 
         new TokenGenerator(this, token).execute();
+
+        Fetch fetch = new Fetch();
+        fetch.setTipKolekcije("Kvizovi");
+        fetch.execute();
+
+/*
+        fetch.setTipKolekcije("Kategorije");
+        fetch.execute();
+
+        fetch.setTipKolekcije("Pitanja");
+        fetch.execute();*/
+
     }
 
     @Override
@@ -364,9 +391,81 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         protected void onPostExecute(String s) {
             KvizoviAkt activity = activityReference.get();
             if (activity == null || activity.isFinishing()) return;
-
             token = s;
 
         }
     }
+
+    public class Fetch extends AsyncTask<String, Integer, Void> {
+
+        private String urlString;
+        private final String projectID = "rmaspirala-1bc9b";
+        private String tipKolekcije;
+
+        private FetchKvizove fetchKvizove = new FetchKvizove();
+        private FetchPitanjaBaza fetchPitanjaBaza = new FetchPitanjaBaza();
+        private FetchKategorijeBaza fetchKategorijeBaza = new FetchKategorijeBaza(getApplicationContext());
+
+        public void setTipKolekcije(String tipKolekcije) {
+            this.tipKolekcije = tipKolekcije;
+        }
+
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/" +
+                    "(default)/documents/" + tipKolekcije + "?access_token=" + token;
+
+
+            try {
+                URL request = new URL(urlString);
+                HttpURLConnection urlConnection = (HttpURLConnection) request.openConnection();
+                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                String result = streamToStringConvertor(inputStream);
+
+                JSONObject jsonObject = new JSONObject(result);
+                JSONArray jsonArray = jsonObject.getJSONArray("documents");
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject name = jsonArray.getJSONObject(i);
+                    String id = name.getString("name");
+                    JSONObject kviz = name.getJSONObject("fields");
+                    JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //lista pitanja kviza
+                    for (int j = 0; j < items.length(); j++) {
+                        pitanjaIdMaska.add(items.getJSONObject(j).getString("stringValue"));
+                    }
+                }
+             /*   switch (tipKolekcije) {
+                    case "Kvizovi":
+                        fetchKvizove.fetchKvizoveBaze(jsonArray);
+                        listaKvizova = fetchKvizove.getKvizovi();
+                        adapterKviz.notifyDataSetChanged();
+                        break;
+                    case "Kategorije":
+                        fetchKategorijeBaza.fetchKategorijeBaze(jsonArray);
+                        listaKategorija = fetchKategorijeBaza.getKategorije();
+                        adapterKategorija.notifyDataSetChanged();
+                        break;
+
+                    case "Pitanja":
+                        fetchPitanjaBaza.fetchPitanjaBaze(jsonArray);
+                        listaPitanja = fetchPitanjaBaza.getMogucaPitanja();
+                        break;
+
+                    default:
+                        break;
+                }*/
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+    }
+
 }

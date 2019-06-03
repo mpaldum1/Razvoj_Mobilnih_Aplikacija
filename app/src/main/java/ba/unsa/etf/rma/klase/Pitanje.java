@@ -11,6 +11,16 @@ public class Pitanje implements Parcelable {
     String naziv, tekstPitanja, tacan;
     ArrayList<String> odgovori = new ArrayList<>();
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    private String id;
+
     public Pitanje(String naziv, String tekstPitanja, String tacan, ArrayList<String> odgovori) {
         this.naziv = naziv;
         this.tekstPitanja = tekstPitanja;

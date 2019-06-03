@@ -38,7 +38,7 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
         this.nazivKolekcije = nazivKolekcije;
     }
 
-    private  ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
+    public   ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
         int length = items.length();
         for (int i = 0; i < length; i++) {
 

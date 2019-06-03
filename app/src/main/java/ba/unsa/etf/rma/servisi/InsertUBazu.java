@@ -88,9 +88,11 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
     protected Void doInBackground(String... strings) {
 
 
+
         if (idStarogKviza != null) {
             urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/" +
-                    nazivKolekcije + "?naziv=" + kviz.getNaziv() + "?access_token=" + token;
+                    nazivKolekcije + "?naziv=" + idStarogKviza + "?access_token=" + token;
+            idStarogKviza = null;
 
         } else {
             urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/"

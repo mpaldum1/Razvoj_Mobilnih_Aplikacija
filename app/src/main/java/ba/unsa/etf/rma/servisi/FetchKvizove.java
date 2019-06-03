@@ -34,6 +34,7 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
     private Kategorija requestedKategorija;
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
+    ArrayList<String> pitanjaIDMask = new ArrayList<>();
 
     public void setIdKategorije(String idKategorije) {
         this.idKategorije = idKategorije;
@@ -55,31 +56,40 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
         this.mogucaPitanja = mogucaPitanja;
     }
 
-    private ArrayList<Kviz> fetchKvizoveBaze(JSONArray jsonArray) {
+    public ArrayList<Kviz> getKvizovi() {
+        return kvizovi;
+    }
+
+    public ArrayList<Kviz> fetchKvizoveBaze(JSONArray jsonArray) {
+
+        kvizovi = new ArrayList<>();
+        int total = jsonArray.length();
 
         try {
-            for (int i = 0; i < jsonArray.length(); i++) {
+            for (int i = 0; i < total; i++) {
                 JSONObject name = jsonArray.getJSONObject(i);
 
-                JSONObject dokument = name.getJSONObject("document");
-                JSONObject kviz = dokument.getJSONObject("fields");
+                JSONObject kviz = name.getJSONObject("fields");
 
                 String naziv = kviz.getJSONObject("naziv").getString("stringValue");
                 String idKategorije = kviz.getJSONObject("idKategorije").getString("stringValue");
 
+                JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //lista pitanja kviza
 
-                JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //listq odgovora
-
-                for (Kategorija k : kategorije) {
+                for (Kategorija k : kategorije) {                   // imamo li kategoriju vec
                     if (k.getNaziv().equals(idKategorije)) {
                         requestedKategorija = k;
                     }
                 }
 
+                for (int j = 0; j < items.length(); j++) {
+                    pitanjaIDMask.add(items.getJSONObject(j).getString("stringValue"));
+                }
+
                 ArrayList<Pitanje> pitanja = new ArrayList<>();
-                for (Pitanje p : mogucaPitanja) {
-                    if (idKategorije.contains(p.getNaziv())) {
-                        pitanja.add(p);
+                for (Pitanje trenutno : mogucaPitanja) {
+                    if (pitanjaIDMask.contains(trenutno.getNaziv())) {                     // ime kviza je jedinstveno
+                        pitanja.add(trenutno);
                     }
                 }
 
@@ -122,11 +132,11 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
                 "/databases/(default)/documents:runQuery?access_token=" + token;
 
         try {
+            // otvaramo konekciju
             URL url = new URL(urlString);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.setDoOutput(true);
             request.setRequestMethod("POST");
-
 
             request.setRequestProperty("Content-Type", "application/json; utf-8");
             request.setRequestProperty("Accept", "application/json");
@@ -135,7 +145,6 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
                 byte[] input = upit.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-
 
             InputStream inputStream = request.getInputStream();
             String result = "{ \"documents\": " + streamToStringConvertor(inputStream) + "}";
