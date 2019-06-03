@@ -22,6 +22,7 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
     private String nazivKolekcije;
     final private String projectID = "rmaspirala-1bc9b";
     private String method;
+    String urlString;
 
     private Kviz kviz;
     private Kategorija kategorija;
@@ -29,6 +30,7 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
     private ArrayList<String> odgovori = new ArrayList<>();
     private Pitanje pitanje;
     private int indeksTacnog = 0;
+    private String idStarogKviza;
 
     public String getToken() {
         return token;
@@ -78,23 +80,36 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
         this.pitanje = pitanje;
     }
 
+    public void setIdStarogKviza(String idStarogKviza) {
+        this.idStarogKviza = idStarogKviza;
+    }
+
     @Override
     protected Void doInBackground(String... strings) {
 
-        String urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/"
-                + nazivKolekcije + "?access_token=" + token;
 
-        URL url = null;                                                       // postavljamo konekciju
+        if (idStarogKviza != null) {
+            urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/" +
+                    nazivKolekcije + "?naziv=" + kviz.getNaziv() + "?access_token=" + token;
+
+        } else {
+            urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/"
+                    + nazivKolekcije + "?access_token=" + token;
+        }
+
+        URL url = null;
         try {
             url = new URL(urlString);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.setDoOutput(true);
             request.setRequestMethod(method);
 
-
             request.setRequestProperty("Content-Type", "application/json; utf-8");
             request.setRequestProperty("Accept", "application/json");
 
+            if (method.equals("PATCH")) {
+                request.setRequestMethod("DELETE");
+            }
 
             String jsonDocument = "";
 
@@ -130,8 +145,8 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
                     }
 
                     int positionTrue = 0;
-                    for(String trenutni: pitanje.getOdgovori()) {
-                        if(trenutni.equals(pitanje.getTacan())) {
+                    for (String trenutni : pitanje.getOdgovori()) {
+                        if (trenutni.equals(pitanje.getTacan())) {
                             break;
                         }
                         positionTrue++;

@@ -30,7 +30,15 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
     private ArrayList<String> odgovori = new ArrayList<>();
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
 
-     private  ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
+    public ArrayList<Pitanje> getMogucaPitanja() {
+        return mogucaPitanja;
+    }
+
+    public void setNazivKolekcije(String nazivKolekcije) {
+        this.nazivKolekcije = nazivKolekcije;
+    }
+
+    private  ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
         int length = items.length();
         for (int i = 0; i < length; i++) {
 
@@ -79,6 +87,7 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
                     if (!kviz.getPitanja().contains(trenutno)) {
                         pitanja.add(trenutno);
                     }
+                    mogucaPitanja.add(trenutno);
                 }
             }
         } catch (IOException e) {

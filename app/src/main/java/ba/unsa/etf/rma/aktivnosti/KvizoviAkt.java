@@ -60,6 +60,9 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
     static public String token = "";
     private TokenGenerator tokenGenerator;
+    private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
+    private InsertUBazu insertUBazu = new InsertUBazu();
+    private boolean isPatch = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
             lwkvizovi.setAdapter(adapterKviz);
             spPostojeceKategorije.setAdapter(adapterKategorija);
+
+            Log.e("pitanja", "" + mogucaPitanja.size());
 
 
             spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
@@ -140,6 +145,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     Kviz trenutni = adapterKviz.getItem(position);
 
+                    isPatch = true;
 
                     Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                     intent.putExtra("Pressed kviz", trenutni);
@@ -190,8 +196,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         if (requestCode == 1) {                         //povratak iz dodaj kviz aktivnosti
             if (resultCode == RESULT_OK) {
 
-                InsertUBazu insertUBazu = new InsertUBazu();
-
                 assert data != null;
                 Kviz povratniKviz = data.getParcelableExtra("Povratni kviz");
                 Kategorija povratnaKategorija = data.getParcelableExtra("Povratna kategorija");
@@ -210,7 +214,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                         insertUBazu.setNazivKolekcije("Kategorije");
                         insertUBazu.setKategorija(trenutna);
-                        insertUBazu.setMethod("POST");
 
                         insertUBazu.execute();
                     }
@@ -240,12 +243,18 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     insertUBazu = new InsertUBazu();
                     insertUBazu.setToken(token);
-
                     insertUBazu.setNazivKolekcije("Kvizovi");
                     insertUBazu.setKviz(povratniKviz);
-                    insertUBazu.setPitanja(povratnaPitanja);
-                    insertUBazu.setMethod("POST");
 
+                    if (isPatch) {
+                        insertUBazu.setMethod("PATCH");
+                        insertUBazu.setIdStarogKviza(povratniKviz.getNaziv());
+                    } else {
+
+                        insertUBazu.setPitanja(povratnaPitanja);
+                        insertUBazu.setMethod("POST");
+                    }
+                    isPatch = false;
                     insertUBazu.execute();
                 }
 
@@ -272,6 +281,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
 
         filterListKvizova.add(dodajKviz);
+
         new TokenGenerator(this, token).execute();
     }
 

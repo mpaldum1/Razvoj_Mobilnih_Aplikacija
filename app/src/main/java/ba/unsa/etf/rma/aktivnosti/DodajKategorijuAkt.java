@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -102,13 +104,27 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
 
         if (listaKategorija != null) {
             for (Kategorija trenutna : listaKategorija) {
-                if (trenutna.getNaziv().equals(naziv) || trenutna.getId().equals(ikona)) {
+                if (trenutna.getNaziv().equals(naziv)) {
                     correct = false;
-                    break;
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                    alertDialog.setTitle("Upozorenje!");
+                    alertDialog.setMessage("Greška - Kategorija već postoji!");
+                    alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    etNaziv.setText("");
+                                    // otpusti upozorenje
+                                }
+                            });
+                    alertDialog.show();
+                    return false;
                 }
             }
         }
-        return correct;
+        return true;
     }
 
     private void clear() {

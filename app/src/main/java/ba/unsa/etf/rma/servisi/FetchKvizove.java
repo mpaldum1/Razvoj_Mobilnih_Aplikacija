@@ -17,7 +17,9 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
+import ba.unsa.etf.rma.klase.Pitanje;
 
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 import static ba.unsa.etf.rma.servisi.FetchPitanjaBaza.streamToStringConvertor;
@@ -27,12 +29,34 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
     private String urlString = "";
     private final String projectID = "rmaspirala-1bc9b";
     private String upit = "";
-    private String idKategorije = "";
+    private String idKategorije = "";                       // naziv kategorije jer je on jedinstven
     private ArrayList<Kviz> kvizovi = new ArrayList<>();
+    private ArrayList<Kategorija> kategorije = new ArrayList<>();
+    private Kategorija requestedKategorija;
+    private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
+
+    public void setIdKategorije(String idKategorije) {
+        this.idKategorije = idKategorije;
+    }
+
+    public void setKvizovi(ArrayList<Kviz> kvizovi) {
+        this.kvizovi = kvizovi;
+    }
+
+    public void setKategorije(ArrayList<Kategorija> kategorije) {
+        this.kategorije = kategorije;
+    }
+
+    public void setRequestedKategorija(Kategorija requestedKategorija) {
+        this.requestedKategorija = requestedKategorija;
+    }
+
+    public void setMogucaPitanja(ArrayList<Pitanje> mogucaPitanja) {
+        this.mogucaPitanja = mogucaPitanja;
+    }
 
     private ArrayList<Kviz> fetchKvizoveBaze(JSONArray jsonArray) {
 
-        ArrayList<Kviz> kvizoviIzBaze = new ArrayList<>();
         try {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject name = jsonArray.getJSONObject(i);
@@ -42,14 +66,31 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
 
                 String naziv = kviz.getJSONObject("naziv").getString("stringValue");
                 String idKategorije = kviz.getJSONObject("idKategorije").getString("stringValue");
-                ArrayList<String> idPitanja = new ArrayList<String>();
 
+
+                JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //listq odgovora
+
+                for (Kategorija k : kategorije) {
+                    if (k.getNaziv().equals(idKategorije)) {
+                        requestedKategorija = k;
+                    }
+                }
+
+                ArrayList<Pitanje> pitanja = new ArrayList<>();
+                for (Pitanje p : mogucaPitanja) {
+                    if (idKategorije.contains(p.getNaziv())) {
+                        pitanja.add(p);
+                    }
+                }
+
+                //Kviz(String naziv, ArrayList<Pitanje> pitanja, Kategorija kategorija)
+                kvizovi.add(new Kviz(naziv, pitanja, requestedKategorija));
 
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return kvizoviIzBaze;
+        return kvizovi;
     }
 
     @Override

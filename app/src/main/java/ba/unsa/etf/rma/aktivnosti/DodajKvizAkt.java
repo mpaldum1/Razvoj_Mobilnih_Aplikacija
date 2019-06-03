@@ -124,7 +124,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                     if (trenutnaKategorija.getId().equals("-3")) {                                            // Pritisnuto "Dodaj Kategoriju"
 
                         Intent intent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
-                        intent.putExtra("Pressed kategorije", listaKategorija.get(position));
+                        intent.putExtra("Pressed kategorije", listaKategorija);
                         startActivityForResult(intent, 2);
 
                     }
@@ -260,7 +260,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                     InsertUBazu insertUBazu = new InsertUBazu();
 
                     insertUBazu.setToken(token);
-                    insertUBazu.setKategorija(trenutnaKategorija);
+                    insertUBazu.setKategorija(povratnaKategorija);
                     insertUBazu.setMethod("POST");
                     insertUBazu.setNazivKolekcije("Kategorije");
                     insertUBazu.execute();
