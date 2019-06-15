@@ -310,6 +310,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
             }
         };
         fetchKategorijeBaza.execute();
+        adapterKviz.notifyDataSetChanged();
     }
 
     @Override

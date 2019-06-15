@@ -1,16 +1,13 @@
 package ba.unsa.etf.rma.servisi;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -161,16 +158,6 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
             JSONObject jsonObject = new JSONObject(rezultat);
             JSONArray items = jsonObject.getJSONArray("documents");
             kvizovi = fetchKvizoveBaze(items);
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                Log.d("Response", response.toString());
-            }
-
 
         } catch (ProtocolException e) {
             e.printStackTrace();
