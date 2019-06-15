@@ -16,6 +16,9 @@ import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Kategorija;
+import ba.unsa.etf.rma.servisi.InsertUBazu;
+
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
 public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.Callback {
 
@@ -63,6 +66,13 @@ public class DodajKategorijuAkt extends AppCompatActivity implements IconDialog.
                     returnIntent.putExtra("Povratna kategorija", trenutnaKategorija);
 
                     setResult(RESULT_OK, returnIntent);
+
+                    InsertUBazu insertUBazu1 = new InsertUBazu();
+                    insertUBazu1.setToken(token);
+                    insertUBazu1.setMethod("POST");
+                    insertUBazu1.setNazivKolekcije("Kategorije");
+                    insertUBazu1.setKategorija(trenutnaKategorija);
+                    insertUBazu1.execute();
                     finish();
                 }
             }

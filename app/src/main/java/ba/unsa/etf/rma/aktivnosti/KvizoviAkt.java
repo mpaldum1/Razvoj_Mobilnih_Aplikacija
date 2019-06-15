@@ -23,17 +23,9 @@ import android.widget.Toast;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.collect.Lists;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
@@ -49,8 +41,6 @@ import ba.unsa.etf.rma.servisi.FetchKategorijeBaza;
 import ba.unsa.etf.rma.servisi.FetchKvizove;
 import ba.unsa.etf.rma.servisi.FetchPitanjaBaza;
 import ba.unsa.etf.rma.servisi.InsertUBazu;
-
-import static ba.unsa.etf.rma.servisi.FetchPitanjaBaza.streamToStringConvertor;
 
 
 public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener {
@@ -73,11 +63,14 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     private DetailFrag detailFrag = new DetailFrag();
 
     static public String token = "";
+    static public String projectID = "rmaspirala-1bc9b";
     private TokenGenerator tokenGenerator;
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
     private InsertUBazu insertUBazu = new InsertUBazu();
     private boolean isPatch = false;
-    private ArrayList<String> pitanjaIdMaska = new ArrayList<>();
+    private ArrayList<String> naziviMogucihPitanja = new ArrayList<>();
+    FetchKategorijeBaza fetchKategorijeBaza;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,15 +92,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         } else {
 
             init();
-
-            adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
-            adapterKategorija = new KategorijaAdapter(this, listaKategorija);
-
-            lwkvizovi.setAdapter(adapterKviz);
-            spPostojeceKategorije.setAdapter(adapterKategorija);
-
-            Log.e("pitanja", "" + mogucaPitanja.size());
-
 
             spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
                 @Override
@@ -131,7 +115,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                                     filterListKvizova.add(currentKviz);
                                 }
                             }
-                            adapterKviz.notifyDataSetChanged();
 
                         } else {
 
@@ -189,6 +172,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                         intent.putExtra("Kvizovi", listaKvizova);
                         intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
                         intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+
                         startActivityForResult(intent, 1);
                     } else {
                         intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
@@ -201,6 +185,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
 
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -220,20 +205,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                 Kategorija zamjena = listaKategorija.get(listaKategorija.size() - 1);            //'Svi ostaje na kraju
                 listaKategorija.remove(listaKategorija.size() - 1);
-
-                for (Kategorija trenutna : povratneKategorije) {
-                    if (!listaKategorija.contains(trenutna) && Integer.parseInt(trenutna.getId()) >= 0) {
-                        listaKategorija.add(trenutna);
-
-                        InsertUBazu insertUBazu1 = new InsertUBazu();
-                        insertUBazu1.setToken(token);
-
-                        insertUBazu1.setNazivKolekcije("Kategorije");
-                        insertUBazu1.setKategorija(trenutna);
-
-                        insertUBazu1.execute();
-                    }
-                }
 
                 listaKategorija.add(zamjena);
                 adapterKategorija.notifyDataSetChanged();
@@ -257,7 +228,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     adapterKviz.notifyDataSetChanged();
 
-                    insertUBazu = new InsertUBazu();
+                    insertUBazu = new InsertUBazu() ;
                     insertUBazu.setToken(token);
                     insertUBazu.setNazivKolekcije("Kvizovi");
                     insertUBazu.setKviz(povratniKviz);
@@ -278,8 +249,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
             }
 
-            trenutnaKategorija = listaKategorija.get(listaKategorija.size() - 1);
-            spPostojeceKategorije.setSelection(listaKategorija.size() - 1);
+            trenutnaKategorija = listaKategorija.get(1);
+            spPostojeceKategorije.setSelection(1);
         }
     }
 
@@ -294,22 +265,50 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         listaKategorija.add(new Kategorija("Kategorije", "-1"));
         listaKategorija.add(trenutnaKategorija);
 
+        adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
+        adapterKategorija = new KategorijaAdapter(this, listaKategorija);
 
-        filterListKvizova.add(dodajKviz);
+        lwkvizovi.setAdapter(adapterKviz);
+        spPostojeceKategorije.setAdapter(adapterKategorija);
 
         new TokenGenerator(this, token).execute();
 
-        Fetch fetch = new Fetch();
-        fetch.setTipKolekcije("Kvizovi");
-        fetch.execute();
+        fetchKategorijeBaza = new FetchKategorijeBaza() {
+            @Override
+            protected void onPostExecute(Void aVoid) {
 
-/*
-        fetch.setTipKolekcije("Kategorije");
-        fetch.execute();
+                listaKategorija.addAll(fetchKategorijeBaza.getKategorije());
+                adapterKviz.notifyDataSetChanged();
 
-        fetch.setTipKolekcije("Pitanja");
-        fetch.execute();*/
+                FetchPitanjaBaza fetchPitanjaBaza = new FetchPitanjaBaza() {
 
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        listaPitanja = getMogucaPitanja();
+                        for (Pitanje trenutno : listaPitanja) {
+                            if (!naziviMogucihPitanja.contains(trenutno.getNaziv())) {
+                                naziviMogucihPitanja.add(trenutno.getNaziv());
+                            }
+                        }
+                        FetchKvizove fetchKvizove = new FetchKvizove() {
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                listaKvizova.addAll(getKvizovi());
+                                filterListKvizova.addAll(getKvizovi());
+                                filterListKvizova.add(dodajKviz);
+                                adapterKviz.notifyDataSetChanged();
+                            }
+                        };
+                        fetchKvizove.setIdKategorije("-2");
+                        fetchKvizove.setMogucaPitanja(listaPitanja);
+                        fetchKvizove.setKategorije(getKategorije());
+                        fetchKvizove.execute();
+                    }
+                };
+                fetchPitanjaBaza.execute();
+            }
+        };
+        fetchKategorijeBaza.execute();
     }
 
     @Override
@@ -396,7 +395,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
     }
 
-    public class Fetch extends AsyncTask<String, Integer, Void> {
+   /* public class Fetch extends AsyncTask<String, Integer, Void> {
 
         private String urlString;
         private final String projectID = "rmaspirala-1bc9b";
@@ -404,7 +403,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
         private FetchKvizove fetchKvizove = new FetchKvizove();
         private FetchPitanjaBaza fetchPitanjaBaza = new FetchPitanjaBaza();
-        private FetchKategorijeBaza fetchKategorijeBaza = new FetchKategorijeBaza(getApplicationContext());
+        private FetchKategorijeBaza fetchKategorijeBaza = new FetchKategorijeBaza();
 
         public void setTipKolekcije(String tipKolekcije) {
             this.tipKolekcije = tipKolekcije;
@@ -432,19 +431,21 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     JSONObject kviz = name.getJSONObject("fields");
                     JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //lista pitanja kviza
                     for (int j = 0; j < items.length(); j++) {
-                        pitanjaIdMaska.add(items.getJSONObject(j).getString("stringValue"));
+                        naziviMogucihPitanja.add(items.getJSONObject(j).getString("stringValue"));
                     }
                 }
-             /*   switch (tipKolekcije) {
+                switch (tipKolekcije) {
                     case "Kvizovi":
                         fetchKvizove.fetchKvizoveBaze(jsonArray);
                         listaKvizova = fetchKvizove.getKvizovi();
-                        adapterKviz.notifyDataSetChanged();
+                        if (adapterKviz != null)
+                            adapterKviz.notifyDataSetChanged();
                         break;
                     case "Kategorije":
                         fetchKategorijeBaza.fetchKategorijeBaze(jsonArray);
                         listaKategorija = fetchKategorijeBaza.getKategorije();
-                        adapterKategorija.notifyDataSetChanged();
+                        if (adapterKategorija != null)
+                            adapterKategorija.notifyDataSetChanged();
                         break;
 
                     case "Pitanja":
@@ -454,7 +455,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     default:
                         break;
-                }*/
+                }
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -467,5 +468,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
 
     }
+    */
 
 }

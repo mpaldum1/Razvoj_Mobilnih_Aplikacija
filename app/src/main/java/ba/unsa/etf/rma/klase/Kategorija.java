@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 public class Kategorija implements Parcelable {
 
-    private  String naziv, id;
+    private  String naziv, id, baseId;
 
     public Kategorija(String naziv, String id) {
         this.naziv = naziv;
@@ -43,6 +43,14 @@ public class Kategorija implements Parcelable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getBaseId() {
+        return baseId;
+    }
+
+    public void setBaseId(String baseId) {
+        this.baseId = baseId;
     }
 
     @Override

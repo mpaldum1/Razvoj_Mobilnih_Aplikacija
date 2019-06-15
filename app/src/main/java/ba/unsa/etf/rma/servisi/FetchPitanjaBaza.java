@@ -18,17 +18,24 @@ import java.util.ArrayList;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
 
-public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitanje>> {
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
-    private String token;
-    private String nazivKolekcije;
+public class FetchPitanjaBaza extends AsyncTask<String, Integer, Void> {
+
+    private String nazivKolekcije = "Pitanja";
     final private String projectID = "rmaspirala-1bc9b";
     private String method;
+
+    public void setKviz(Kviz kviz) {
+        this.kviz = kviz;
+    }
+
     private Kviz kviz;
 
     private ArrayList<Pitanje> pitanja = new ArrayList<>();
     private ArrayList<String> odgovori = new ArrayList<>();
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
+    private ArrayList<String> pitanjaMaskID = new ArrayList<>();
 
     public ArrayList<Pitanje> getMogucaPitanja() {
         return mogucaPitanja;
@@ -38,14 +45,26 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
         this.nazivKolekcije = nazivKolekcije;
     }
 
-    public   ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
+    public void setMogucaPitanja(ArrayList<Pitanje> mogucaPitanja) {
+        this.mogucaPitanja = mogucaPitanja;
+    }
+
+    public ArrayList<String> getPitanjaMaskID() {
+        return pitanjaMaskID;
+    }
+
+    public ArrayList<Pitanje> fetchPitanjaBaze(JSONArray items) throws JSONException {              // ucitavamo pitanja iz baze
+        ArrayList<Pitanje> returnList = new ArrayList<>();
         int length = items.length();
+
         for (int i = 0; i < length; i++) {
 
             JSONObject trenutniObjekat = items.getJSONObject(i);
             String id = trenutniObjekat.getString("name");
             JSONObject trenutniKviz = trenutniObjekat.getJSONObject("fields");
             String naziv = trenutniKviz.getJSONObject("naziv").getString("stringValue");
+            if (naziv.equals(""))
+                continue;
             int index = trenutniKviz.getJSONObject("indexTacnog").getInt("integerValue");
             JSONArray jsonArray = trenutniKviz.getJSONObject("odgovori").getJSONObject("arrayValue").getJSONArray("values");
             int arrayLength = jsonArray.length();
@@ -56,17 +75,19 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
 
             //   public Pitanje(String naziv, String tekstPitanja, String tacan, ArrayList<String> odgovori)
             Pitanje pitanje = new Pitanje(naziv, naziv, odgovori.get(index), odgovori);
-            pitanja.add(pitanje);
+            pitanjaMaskID.add(naziv);
+            returnList.add(pitanje);
+            odgovori = new ArrayList<>();
 
         }
-        return pitanja;
+        return returnList;
     }
 
 
     @Override
-    protected ArrayList<Pitanje> doInBackground(String... strings) {
+    protected Void doInBackground(String... strings) {
 
-        String urlString = "https://firestore.googleapis.com/v1/projects/" + "/databases/(default)/documents/"
+        String urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/"
                 + nazivKolekcije + "?access_token=" + token;
 
         URL url = null;                                                       // postavljamo konekciju
@@ -83,11 +104,14 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
             if (nazivKolekcije.equals("Pitanja")) {
                 jsonArray = jsonObject.getJSONArray("documents");
                 pitanja = fetchPitanjaBaze(jsonArray);
-                for (Pitanje trenutno : pitanja) {
-                    if (!kviz.getPitanja().contains(trenutno)) {
-                        pitanja.add(trenutno);
+                if (kviz == null || kviz.getPitanja() == null) {
+                    mogucaPitanja.addAll(pitanja);
+                } else {
+                    for (Pitanje trenutno : pitanja) {
+                        if (trenutno != null && !kviz.getPitanja().contains(trenutno)) {
+                            mogucaPitanja.add(trenutno);
+                        }
                     }
-                    mogucaPitanja.add(trenutno);
                 }
             }
         } catch (IOException e) {
@@ -95,10 +119,10 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, ArrayList<Pitan
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return pitanja;
+        return null;
     }
 
-        public static String streamToStringConvertor(InputStream inputStream) throws IOException {
+    public static String streamToStringConvertor(InputStream inputStream) throws IOException {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder stringBuilder = new StringBuilder();

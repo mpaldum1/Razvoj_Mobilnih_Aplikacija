@@ -18,6 +18,9 @@ import java.util.ArrayList;
 
 import ba.unsa.etf.rma.R;
 import ba.unsa.etf.rma.klase.Pitanje;
+import ba.unsa.etf.rma.servisi.InsertUBazu;
+
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
 public class DodajPitanjeAkt extends AppCompatActivity {
 
@@ -90,10 +93,19 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                 if (validationCkeck() && !tacanOdgovor.equals("")) {
 
                     povratnoPitanje = new Pitanje(nazivPitanja, nazivPitanja, tacanOdgovor, listaOdgovora);
+                    listaPitanja.add(povratnoPitanje);
                     Intent returnIntent = new Intent();
                     returnIntent.putExtra("Povratno pitanje", povratnoPitanje);
 
                     setResult(RESULT_OK, returnIntent);
+                    InsertUBazu insertUBazu = new InsertUBazu();
+                    insertUBazu.setToken(token);
+                    insertUBazu.setMethod("POST");
+                    insertUBazu.setNazivKolekcije("Pitanja");
+                    insertUBazu.setPitanje(povratnoPitanje);
+                    insertUBazu.setOdgovori(listaOdgovora);
+                    insertUBazu.execute();
+
                     finish();
                 }
             }
@@ -138,8 +150,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
 
                 if (flag && tacanIma && listaOdgovora.get(position).equals(tacanOdgovor)) {                     // imamo li tacan odgovor
                     text.setTextColor(getResources().getColor(R.color.tacanOdgovor));
-                }
-                else {
+                } else {
                     text.setTextColor(Color.BLACK);
                 }
                 return view;
@@ -164,16 +175,15 @@ public class DodajPitanjeAkt extends AppCompatActivity {
         }
 
 
-
-            for (Pitanje trenutni : listaPitanja) {
-                if (trenutni.getNaziv().equals(nazivPitanja)) {
-                    correct = false;
-                    this.getWindow().getDecorView().findViewById(R.id.etNaziv).setBackgroundResource(R.color.colorRedValidation);
-                    Toast.makeText(this,"Unesite jedinstveni naziv pitanja kviza", Toast.LENGTH_SHORT).show();
-                    // ime mora biti jedinstveno
-                    break;
-                }
+        for (Pitanje trenutni : listaPitanja) {
+            if (trenutni.getNaziv().equals(nazivPitanja)) {
+                correct = false;
+                this.getWindow().getDecorView().findViewById(R.id.etNaziv).setBackgroundResource(R.color.colorRedValidation);
+                Toast.makeText(this, "Unesite jedinstveni naziv pitanja kviza", Toast.LENGTH_SHORT).show();
+                // ime mora biti jedinstveno
+                break;
             }
+        }
 
         return correct;
     }

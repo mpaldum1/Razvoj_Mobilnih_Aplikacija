@@ -88,7 +88,6 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
     protected Void doInBackground(String... strings) {
 
 
-
         if (idStarogKviza != null) {
             urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/" +
                     nazivKolekcije + "?naziv=" + idStarogKviza + "?access_token=" + token;
@@ -125,6 +124,8 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
                     int counter = 1;
 
                     for (Pitanje trenutno : kviz.getPitanja()) {
+                        if (trenutno.getNaziv().equals(""))
+                            continue;
                         if (counter < kviz.getPitanja().size() - 1)
                             jsonDocument += "{ \"stringValue\": \"" + trenutno.getNaziv() + "\"}, ";
                         else if (counter == kviz.getPitanja().size() - 1)
@@ -147,27 +148,29 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
                     }
 
                     int positionTrue = 0;
-                    for (String trenutni : pitanje.getOdgovori()) {
-                        if (trenutni.equals(pitanje.getTacan())) {
-                            break;
+                        for (String trenutni : pitanje.getOdgovori()) {
+                            if (trenutni.equals(pitanje.getTacan())) {
+                                break;
+                            }
+                            positionTrue++;
                         }
-                        positionTrue++;
-                    }
-                    jsonDocument = "{ \"fields\": { \"naziv\": { \"stringValue\": \"" + pitanje.getNaziv() + "\"}, \"odgovori\": { " +
-                            "\"arrayValue\": { \"values\": [";
+                        jsonDocument = "{ \"fields\": { \"naziv\": { \"stringValue\": \"" + pitanje.getNaziv() + "\"}, \"odgovori\": { " +
+                                "\"arrayValue\": { \"values\": [";
 
-                    counter = 1;
-                    int total = odgovori.size();
+                        counter = 1;
+                        int total = odgovori.size();
 
-                    for (String o : odgovori) {
-                        if (counter != total) {
-                            jsonDocument += "{ \"stringValue\": \"" + o + "\"}, ";
-                        } else {
-                            jsonDocument += "{ \"stringValue\": \"" + o + "\"} ";
+                        for (String o : odgovori) {
+                            if (counter != total) {
+                                jsonDocument += "{ \"stringValue\": \"" + o + "\"}, ";
+                            } else {
+                                jsonDocument += "{ \"stringValue\": \"" + o + "\"} ";
+                            }
+                            ++counter;
                         }
-                        ++counter;
-                    }
-                    jsonDocument += "]}}, \"indexTacnog\": { \"integerValue\": \"" + positionTrue + "\"}}}";
+                        jsonDocument += "]}}, \"indexTacnog\": { \"integerValue\": \"" + positionTrue + "\"}}}";
+
+
 
                     break;
 

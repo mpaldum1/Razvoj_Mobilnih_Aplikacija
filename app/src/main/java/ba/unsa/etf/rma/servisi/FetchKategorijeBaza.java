@@ -1,6 +1,5 @@
 package ba.unsa.etf.rma.servisi;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -18,20 +17,16 @@ import java.util.ArrayList;
 
 import ba.unsa.etf.rma.klase.Kategorija;
 
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.projectID;
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
 public class FetchKategorijeBaza extends AsyncTask<String, Integer, Void> {
 
-    private Context context;
     private GoogleCredential credential;
 
     private URL url;
     private ArrayList<Kategorija> kategorije = new ArrayList<>();
-    private ArrayList<Kategorija> helperLista = new ArrayList<>();
 
-    public FetchKategorijeBaza(Context context) {
-        this.context = context;
-    }
 
     public ArrayList<Kategorija> getKategorije() {
         return kategorije;
@@ -39,12 +34,15 @@ public class FetchKategorijeBaza extends AsyncTask<String, Integer, Void> {
 
     public void fetchKategorijeBaze(JSONArray jsonArray) throws JSONException {
 
+        ArrayList<Kategorija> helperLista = new ArrayList<>();
         int total = jsonArray.length();
+
         for (int i = 0; i < total; i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             JSONObject trenutniKviz = jsonObject.getJSONObject("fields");
 
             String naziv = trenutniKviz.getJSONObject("naziv").getString("stringValue");
+            if (naziv.equals("")) continue;
             String idIkonice = trenutniKviz.getJSONObject("idIkonice").getString("integerValue");
 
             // Kategorija(String naziv, String id) - konstrukctor
@@ -57,8 +55,7 @@ public class FetchKategorijeBaza extends AsyncTask<String, Integer, Void> {
     @Override
     protected Void doInBackground(String... strings) {
 
-
-        String urlString = "https://firestore.googleapis.com/v1/projects/" + "/databases/(default)/documents/Kategorije?access_token=" + token ;
+        String urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents/Kategorije?access_token=" + token;
 
         try {
             URL url = new URL(urlString);

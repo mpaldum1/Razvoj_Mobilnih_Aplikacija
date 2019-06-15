@@ -31,6 +31,7 @@ import ba.unsa.etf.rma.adapteri.KategorijaAdapter;
 import ba.unsa.etf.rma.klase.Kategorija;
 import ba.unsa.etf.rma.klase.Kviz;
 import ba.unsa.etf.rma.klase.Pitanje;
+import ba.unsa.etf.rma.servisi.FetchPitanjaBaza;
 import ba.unsa.etf.rma.servisi.InsertUBazu;
 
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
@@ -56,6 +57,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     private Kviz trenutniKviz;
     private Kategorija trenutnaKategorija;
     private Kategorija dodajKategoriju;
+    private FetchPitanjaBaza fetchPitanjaBaza;
 
 
     private static final int READ_REQUEST_CODE = 42;
@@ -71,6 +73,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
         initialize();
         //pritisnuto neko pitanje
+        listaMogucihPitanja = fetchPitanjaBaza.getMogucaPitanja();
 
         dodajKategoriju = new Kategorija("Dodaj kategoriju", "-3");
         if (!listaKategorija.contains(dodajKategoriju)) {
@@ -197,6 +200,16 @@ public class DodajKvizAkt extends AppCompatActivity {
                     returnIntent.putExtra("Povratne kategorije", listaKategorija);
                     returnIntent.putExtra("Povratna pitanja", listaPitanja);
 
+                    InsertUBazu insertUBazu1 = new InsertUBazu();
+
+                    insertUBazu1.setToken(token);
+                    insertUBazu1.setMethod("POST");
+                    insertUBazu1.setNazivKolekcije("Kategorije");
+                    insertUBazu1.setKategorija(trenutniKviz.getKategorija());
+                    insertUBazu1.setKviz(trenutniKviz);
+                    insertUBazu1.execute();
+
+
                     setResult(RESULT_OK, returnIntent);
                     finish();
                 }
@@ -229,14 +242,6 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaPitanja.set(listaPitanja.size() - 1, povratnoPitanje);
                 listaPitanja.add(zamjena);
 
-                InsertUBazu insertUBazu = new InsertUBazu();
-
-                insertUBazu.setToken(token);
-                insertUBazu.setPitanje(povratnoPitanje);
-                insertUBazu.setOdgovori((ArrayList<String>) povratnoPitanje.getOdgovori());
-                insertUBazu.setMethod("POST");
-                insertUBazu.setNazivKolekcije("Pitanja");
-                insertUBazu.execute();
                 adapterPitanja.notifyDataSetChanged();
             }
         }
@@ -256,14 +261,6 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                     adapterKategorija.notifyDataSetChanged();
                     spKategorije.setSelection(listaKategorija.indexOf(trenutnaKategorija));
-
-                    InsertUBazu insertUBazu = new InsertUBazu();
-
-                    insertUBazu.setToken(token);
-                    insertUBazu.setKategorija(povratnaKategorija);
-                    insertUBazu.setMethod("POST");
-                    insertUBazu.setNazivKolekcije("Kategorije");
-                    insertUBazu.execute();
 
                 }
 
@@ -363,12 +360,21 @@ public class DodajKvizAkt extends AppCompatActivity {
 
         listaMogucihPitanja = new ArrayList<>();
 
+
         Intent intent = getIntent();
         trenutniKviz = intent.getParcelableExtra("Pressed kviz");
         listaKategorija = intent.getParcelableArrayListExtra("Moguce kategorije");
         listaKvizova = intent.getParcelableArrayListExtra("Kvizovi");
         trenutnaKategorija = intent.getParcelableExtra("Trenutna kategorija");
         listaPitanja = intent.getParcelableArrayListExtra("Pitanja kviza");
+
+        fetchPitanjaBaza = new FetchPitanjaBaza();
+        fetchPitanjaBaza.setNazivKolekcije("Pitanja");
+        fetchPitanjaBaza.setKviz(trenutniKviz);
+        fetchPitanjaBaza.execute();
+
+        listaMogucihPitanja = fetchPitanjaBaza.getMogucaPitanja();
+
 
     }
 
