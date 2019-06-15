@@ -24,7 +24,6 @@ import ba.unsa.etf.rma.klase.Pitanje;
 
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.projectID;
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
-import static ba.unsa.etf.rma.servisi.FetchPitanjaBaza.streamToStringConvertor;
 
 public class FetchKvizove extends AsyncTask<String, Void, Void> {
 
@@ -36,6 +35,8 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
     private Kategorija requestedKategorija;
     private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
     private ArrayList<String> pitanjaIDMask = new ArrayList<>();
+
+    private String nazivKolekcije = "Kvizovi";
 
     public void setIdKategorije(String idKategorije) {
         this.idKategorije = idKategorije;
@@ -61,9 +62,6 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
         return pitanjaIDMask;
     }
 
-    public void setPitanjaIDMask(ArrayList<String> pitanjaIDMask) {
-        this.pitanjaIDMask = pitanjaIDMask;
-    }
 
     public ArrayList<Kviz> getKvizovi() {
         return kvizovi;
@@ -121,25 +119,24 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... strings) {
 
-        if (!idKategorije.equals("-2")) {
-            upit = "{\n" +
-                    "    \"structuredQuery\": {\n" +
-                    "        \"where\" : {\n" +
-                    "            \"fieldFilter\" : { \n" +
-                    "                \"field\": {\"fieldPath\": \"idKategorije\"}, \n" +
-                    "                \"op\":\"EQUAL\", \n" +
-                    "                \"value\": {\"stringValue\": \"" + idKategorije + "\"}\n" +
-                    "            }\n" +
-                    "        },\n" +
-                    "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
-                    "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
-                    "       }\n" +
-                    "}";
-        }
+        upit = "{\n" +
+                "    \"structuredQuery\": {\n" +
+                "        \"where\" : {\n" +
+                "            \"fieldFilter\" : { \n" +
+                "                \"field\": {\"fieldPath\": \"idKategorije\"}, \n" +
+                "                \"op\":\"EQUAL\", \n" +
+                "                \"value\": {\"stringValue\": \"" + idKategorije + "\"}\n" +
+                "            }\n" +
+                "        },\n" +
+                "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
+                "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
+                "       \"limit\": 1000 \n" +
+                "    }\n" +
+                "}";
 
 
-        urlString = "https://firestore.googleapis.com/v1/projects/" + projectID +
-                "/databases/(default)/documents:runQuery?access_token=" + token;
+        urlString = "https://firestore.googleapis.com/v1/projects/" + projectID +"/databases/(default)/documents:runQuery?access_token="
+                + token;
 
         try {
             // otvaramo konekciju
@@ -152,21 +149,22 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
             request.setRequestProperty("Accept", "application/json");
 
 
+
             try (OutputStream os = request.getOutputStream()) {
                 byte[] input = upit.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
 
+
             InputStream in = request.getInputStream();
-            String rezultat = (streamToStringConvertor(in));
-            rezultat = "{ \"documents\": " + rezultat + "}";
-            JSONObject jo = new JSONObject(rezultat);
-            JSONArray items = jo.getJSONArray("documents");
+            String rezultat = "{\"documents\": " + (FetchPitanjaBaza.streamToStringConvertor(in)) + "}";
+            JSONObject jsonObject = new JSONObject(rezultat);
+            JSONArray items = jsonObject.getJSONArray("documents");
             kvizovi = fetchKvizoveBaze(items);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
                 StringBuilder response = new StringBuilder();
-                String responseLine = null;
+                String responseLine;
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }

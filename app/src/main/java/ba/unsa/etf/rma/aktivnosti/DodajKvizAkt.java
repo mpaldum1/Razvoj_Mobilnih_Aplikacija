@@ -324,6 +324,14 @@ public class DodajKvizAkt extends AppCompatActivity {
                                     trenutno.setOdgovori(lineOdgovori);
                                     trenutno.setTacan(lineOdgovori.get(Integer.parseInt(lineFile[2])));
                                     listaPitanja.add(listaPitanja.size() - 1, trenutno);
+
+                                    InsertUBazu insertUBazu = new InsertUBazu();
+                                    insertUBazu.setToken(token);
+                                    insertUBazu.setMethod("POST");
+                                    insertUBazu.setNazivKolekcije("Pitanja");
+                                    insertUBazu.setPitanje(trenutno);
+                                    insertUBazu.setOdgovori((ArrayList<String>) trenutno.getOdgovori());
+                                    insertUBazu.execute();
                                     adapterPitanja.notifyDataSetChanged();
                                 }
                                 linePosition++;

@@ -228,7 +228,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     adapterKviz.notifyDataSetChanged();
 
-                    insertUBazu = new InsertUBazu() ;
+                    insertUBazu = new InsertUBazu();
                     insertUBazu.setToken(token);
                     insertUBazu.setNazivKolekcije("Kvizovi");
                     insertUBazu.setKviz(povratniKviz);
@@ -299,9 +299,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                                 adapterKviz.notifyDataSetChanged();
                             }
                         };
-                        fetchKvizove.setIdKategorije("-2");
+                        fetchKvizove.setIdKategorije(" Geografija");
                         fetchKvizove.setMogucaPitanja(listaPitanja);
                         fetchKvizove.setKategorije(getKategorije());
+                        fetchKvizove.setKvizovi(listaKvizova);
                         fetchKvizove.execute();
                     }
                 };

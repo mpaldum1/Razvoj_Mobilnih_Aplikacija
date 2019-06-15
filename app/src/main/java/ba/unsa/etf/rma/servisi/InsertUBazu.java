@@ -117,6 +117,7 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
             switch (nazivKolekcije) {
 
                 case "Kvizovi":
+                    if (kviz == null || kviz.getNaziv() == null) break;
 
                     Log.e("link", urlString);
 
@@ -148,28 +149,27 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
                     }
 
                     int positionTrue = 0;
-                        for (String trenutni : pitanje.getOdgovori()) {
-                            if (trenutni.equals(pitanje.getTacan())) {
-                                break;
-                            }
-                            positionTrue++;
+                    for (String trenutni : pitanje.getOdgovori()) {
+                        if (trenutni.equals(pitanje.getTacan())) {
+                            break;
                         }
-                        jsonDocument = "{ \"fields\": { \"naziv\": { \"stringValue\": \"" + pitanje.getNaziv() + "\"}, \"odgovori\": { " +
-                                "\"arrayValue\": { \"values\": [";
+                        positionTrue++;
+                    }
+                    jsonDocument = "{ \"fields\": { \"naziv\": { \"stringValue\": \"" + pitanje.getNaziv() + "\"}, \"odgovori\": { " +
+                            "\"arrayValue\": { \"values\": [";
 
-                        counter = 1;
-                        int total = odgovori.size();
+                    counter = 1;
+                    int total = odgovori.size();
 
-                        for (String o : odgovori) {
-                            if (counter != total) {
-                                jsonDocument += "{ \"stringValue\": \"" + o + "\"}, ";
-                            } else {
-                                jsonDocument += "{ \"stringValue\": \"" + o + "\"} ";
-                            }
-                            ++counter;
+                    for (String o : odgovori) {
+                        if (counter != total) {
+                            jsonDocument += "{ \"stringValue\": \"" + o + "\"}, ";
+                        } else {
+                            jsonDocument += "{ \"stringValue\": \"" + o + "\"} ";
                         }
-                        jsonDocument += "]}}, \"indexTacnog\": { \"integerValue\": \"" + positionTrue + "\"}}}";
-
+                        ++counter;
+                    }
+                    jsonDocument += "]}}, \"indexTacnog\": { \"integerValue\": \"" + positionTrue + "\"}}}";
 
 
                     break;
