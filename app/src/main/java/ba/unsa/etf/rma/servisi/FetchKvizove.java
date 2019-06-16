@@ -1,6 +1,8 @@
 package ba.unsa.etf.rma.servisi;
 
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,9 +66,9 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
         return kvizovi;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public ArrayList<Kviz> fetchKvizoveBaze(JSONArray jsonArray) {
 
-        kvizovi = new ArrayList<>();
         int total = jsonArray.length();
 
         try {
@@ -89,58 +91,64 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
                     }
                 }
 
-                for (int j = 0; j < items.length(); j++) {                  //provjeriti id moze li
-                    pitanjaIDMask.add(items.getJSONObject(j).getString("stringValue"));
-                }
-
                 ArrayList<Pitanje> pitanja = new ArrayList<>();
-                for (Pitanje trenutno : mogucaPitanja) {
-                    for (String trenutnoMoguce : pitanjaIDMask) {                     // ime kviza je jedinstveno
-                        if (trenutnoMoguce.equals(trenutno.getNaziv())) {
+
+                for (int j = 0; j < items.length(); j++) {
+                    //provjeriti id moze li
+                    String nazivPitanja = items.getJSONObject(j).getString("stringValue");
+
+                    if (!pitanjaIDMask.contains(nazivPitanja))
+                        pitanjaIDMask.add(nazivPitanja);
+
+                    for (Pitanje trenutno : mogucaPitanja) {
+                        if (trenutno.getNaziv().equals(nazivPitanja)) {
                             pitanja.add(trenutno);
-                            break;
                         }
                     }
+
                 }
+                boolean imamoUListi = false;
 
                 //Kviz(String naziv, ArrayList<Pitanje> pitanja, Kategorija kategorija)
-                kvizovi.add(new Kviz(naziv, pitanja, requestedKategorija));
+                for (Kviz temp : kvizovi) {
+                    if (temp.getNaziv().equals(naziv)) {
+                        imamoUListi = true;
+                    }
+                }
+                if (!imamoUListi) {
+                    kvizovi.add(new Kviz(naziv, pitanja, requestedKategorija));
+                }
 
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        pitanjaIDMask = new ArrayList<>();
         return kvizovi;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected Void doInBackground(String... strings) {
 
-        if (idKategorije.equals("Svi")) {
-            upit = "{\n" +
-                    "    \"structuredQuery\": {\n" +
-                    "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
-                    "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
-                    "       \"limit\": 1000 \n" +
-                    "    }\n" +
-                    "}";
 
-        } else {
-            upit = "{\n" +
-                    "    \"structuredQuery\": {\n" +
-                    "        \"where\" : {\n" +
+        upit = "{\n" +
+                "    \"structuredQuery\": {\n";
+        if (!idKategorije.equals("Svi")) {
+            upit += "    \"where\" : {\n" +
                     "            \"fieldFilter\" : { \n" +
                     "                \"field\": {\"fieldPath\": \"idKategorije\"}, \n" +
                     "                \"op\":\"EQUAL\", \n" +
                     "                \"value\": {\"stringValue\": \"" + idKategorije + "\"}\n" +
                     "            }\n" +
-                    "        },\n" +
-                    "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
-                    "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
-                    "       \"limit\": 1000 \n" +
-                    "    }\n" +
-                    "}";
+                    "        },\n";
         }
+        upit += " \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
+                "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
+                "       \"limit\": 1000 \n" +
+                "    }\n" +
+                "}";
+
         urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents:runQuery?access_token="
                 + token;
 

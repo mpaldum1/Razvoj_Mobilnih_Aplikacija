@@ -41,10 +41,6 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, Void> {
         return mogucaPitanja;
     }
 
-    public void setNazivKolekcije(String nazivKolekcije) {
-        this.nazivKolekcije = nazivKolekcije;
-    }
-
     public void setMogucaPitanja(ArrayList<Pitanje> mogucaPitanja) {
         this.mogucaPitanja = mogucaPitanja;
     }
@@ -63,7 +59,7 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, Void> {
             String id = trenutniObjekat.getString("name");
             JSONObject trenutniKviz = trenutniObjekat.getJSONObject("fields");
             String naziv = trenutniKviz.getJSONObject("naziv").getString("stringValue");
-            if (naziv.equals(""))
+            if (naziv.equals("") || pitanjaMaskID.contains(naziv))
                 continue;
             int index = trenutniKviz.getJSONObject("indexTacnog").getInt("integerValue");
             JSONArray jsonArray = trenutniKviz.getJSONObject("odgovori").getJSONObject("arrayValue").getJSONArray("values");
@@ -74,6 +70,7 @@ public class FetchPitanjaBaza extends AsyncTask<String, Integer, Void> {
             }
 
             //   public Pitanje(String naziv, String tekstPitanja, String tacan, ArrayList<String> odgovori)
+
             Pitanje pitanje = new Pitanje(naziv, naziv, odgovori.get(index), odgovori);
             pitanjaMaskID.add(naziv);
             returnList.add(pitanje);

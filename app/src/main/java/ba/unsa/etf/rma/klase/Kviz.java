@@ -6,8 +6,8 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 
 public class Kviz implements Parcelable {
-    private  String naziv;
-    private  ArrayList<Pitanje> pitanja = new ArrayList<>();
+    private String naziv;
+    private ArrayList<Pitanje> pitanja = new ArrayList<>();
 
     public Kviz(String naziv, ArrayList<Pitanje> pitanja, Kategorija kategorija) {
         this.naziv = naziv;
@@ -15,7 +15,7 @@ public class Kviz implements Parcelable {
         this.kategorija = kategorija;
     }
 
-    private  Kategorija kategorija;
+    private Kategorija kategorija;
 
     protected Kviz(Parcel in) {
         naziv = in.readString();
@@ -71,4 +71,5 @@ public class Kviz implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(naziv);
     }
+
 }

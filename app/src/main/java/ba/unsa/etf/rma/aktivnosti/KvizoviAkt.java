@@ -53,6 +53,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     private ArrayList<Pitanje> listaPitanja = new ArrayList<>();
     private KvizAdapter adapterKviz;
     private KategorijaAdapter adapterKategorija;
+    private ArrayList<Kviz> helperLista = new ArrayList<>();
 
     private ArrayList<Kviz> filterListKvizova = new ArrayList<>();
     private Kategorija trenutnaKategorija;
@@ -64,12 +65,11 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
     static public String token = "";
     static public String projectID = "rmaspirala-1bc9b";
-    private TokenGenerator tokenGenerator;
-    private ArrayList<Pitanje> mogucaPitanja = new ArrayList<>();
+
     private InsertUBazu insertUBazu = new InsertUBazu();
     private boolean isPatch = false;
     private ArrayList<String> naziviMogucihPitanja = new ArrayList<>();
-    FetchKategorijeBaza fetchKategorijeBaza;
+    private FetchKategorijeBaza fetchKategorijeBaza;
 
 
     @Override
@@ -80,9 +80,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
 
         dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
-        if (!listaKvizova.contains(dodajKviz))
-            listaKvizova.add(dodajKviz);
-
 
         int orientation = getResources().getConfiguration().orientation;
 
@@ -101,6 +98,23 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
                     String clickedKategorijaNaziv = trenutnaKategorija.getNaziv();
 
+                    FetchKvizove fetchKvizove = new FetchKvizove() {
+                        @RequiresApi(api = Build.VERSION_CODES.N)
+                        @Override
+                        protected void onPostExecute(Void aVoid) {
+
+                            helperLista = new ArrayList<>(getKvizovi());
+                            filterListKvizova.removeIf(kviz -> !helperLista.contains(kviz));
+                            adapterKviz.notifyDataSetChanged();
+
+                        }
+                    };
+                    fetchKvizove.setMogucaPitanja(listaPitanja);
+                    fetchKvizove.setKategorije(listaKategorija);
+                    fetchKvizove.setIdKategorije(trenutnaKategorija.getNaziv());
+                    fetchKvizove.setKvizovi(listaKvizova);
+                    fetchKvizove.execute();
+
                     if (trenutnaKategorija.getId().equals("-1")) {                                              //pritisnuto Kategorije
                         // empty
                     } else {
@@ -108,18 +122,13 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                         if (trenutnaKategorija.getId().equals("-2")) {// Pritisnuto "Sve"
 
-                            filterListKvizova.removeAll(filterListKvizova);
-
+                            filterListKvizova.clear();
                             filterListKvizova.addAll(listaKvizova);
-                            for (Kviz currentKviz : listaKvizova) {
-                                if (!filterListKvizova.contains(currentKviz)) {
-                                    filterListKvizova.add(currentKviz);
-                                }
-                            }
+                            adapterKviz.notifyDataSetChanged();
 
                         } else {
 
-                            filterListKvizova.removeAll(filterListKvizova);
+                            filterListKvizova.clear();
                             // Filtriramo
 
                             for (Kviz currentKviz : listaKvizova) {
@@ -129,6 +138,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                             }
                             if (!filterListKvizova.contains(dodajKviz))
                                 filterListKvizova.add(dodajKviz);
+
                             adapterKviz.notifyDataSetChanged();
                         }
                     }
@@ -154,6 +164,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
                     intent.putExtra("Pitanja kviza", trenutni.getPitanja());
                     intent.putExtra("Token", token);
+                    intent.putExtra("Moguca pitanja", listaPitanja);
                     startActivityForResult(intent, 1);
 
                     return true;
@@ -286,7 +297,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                     @Override
                     protected void onPostExecute(Void aVoid) {
-                        listaPitanja = getMogucaPitanja();
+                        listaPitanja = new ArrayList<>(getMogucaPitanja());
                         for (Pitanje trenutno : listaPitanja) {
                             if (!naziviMogucihPitanja.contains(trenutno.getNaziv())) {
                                 naziviMogucihPitanja.add(trenutno.getNaziv());
@@ -297,16 +308,18 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                             @Override
                             protected void onPostExecute(Void aVoid) {
                                 listaKvizova.addAll(getKvizovi());
-                                filterListKvizova.addAll(getKvizovi());
-                                if (!filterListKvizova.contains(dodajKviz))
-                                    filterListKvizova.add(dodajKviz);
+
+                                if (!listaKvizova.contains(dodajKviz))
+                                    listaKvizova.add(dodajKviz);
+
                                 adapterKviz.notifyDataSetChanged();
+                                spPostojeceKategorije.setSelection(1);
                             }
                         };
                         fetchKvizove.setMogucaPitanja(listaPitanja);
                         fetchKvizove.setKategorije(getKategorije());
                         fetchKvizove.setIdKategorije("Svi");
-                        fetchKvizove.setKvizovi(listaKvizova);
+                        fetchKvizove.setKvizovi(new ArrayList<>());
                         fetchKvizove.execute();
 
                     }
@@ -315,7 +328,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
             }
         };
         fetchKategorijeBaza.execute();
-        adapterKviz.notifyDataSetChanged();
     }
 
     @Override

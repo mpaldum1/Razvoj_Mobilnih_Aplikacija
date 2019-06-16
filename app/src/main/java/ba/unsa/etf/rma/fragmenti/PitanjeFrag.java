@@ -84,8 +84,8 @@ public class PitanjeFrag extends Fragment {
         if (getArguments() != null) {
             trenutniKviz = getArguments().getParcelable(ARG_PARAM1);
             listaPitanja = getArguments().getParcelableArrayList(ARG_PARAM2);
-            if(listaPitanja.size() != 0)
-            listaPitanja.remove(listaPitanja.size() - 1);           //brisemo dodaj pitanje
+            if (listaPitanja.size() != 0 && listaPitanja.get(listaPitanja.size() - 1).getNaziv().equals("Dodaj kviz"))
+                listaPitanja.remove(listaPitanja.size() - 1);           //brisemo dodaj pitanje
             trenutniKviz.setPitanja(listaPitanja);
             Collections.shuffle(listaPitanja);
             trenutnoPitanje = listaPitanja.get(0);

@@ -65,6 +65,10 @@ public class DodajKvizAkt extends AppCompatActivity {
     public DodajKvizAkt() {
     }
 
+    public void setLvMogucaPitanja(ListView lvMogucaPitanja) {
+        this.lvMogucaPitanja = lvMogucaPitanja;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +77,16 @@ public class DodajKvizAkt extends AppCompatActivity {
 
         initialize();
         //pritisnuto neko pitanje
-        listaMogucihPitanja = fetchPitanjaBaza.getMogucaPitanja();
+
+
+        adapterPitanja = new ElementiKvizaAdapter(this, R.layout.row_view, listaPitanja);       //postavljamo adaptere
+        adapterKategorija = new KategorijaAdapter(this, listaKategorija);
+        adapterMogucaPitanja = new ElementiKvizaAdapter(this, R.layout.row_view, listaMogucihPitanja);
+
+        lvDodanaPitanja.setAdapter(adapterPitanja);
+        spKategorije.setAdapter(adapterKategorija);
+        lvMogucaPitanja.setAdapter(adapterMogucaPitanja);
+
 
         dodajKategoriju = new Kategorija("Dodaj kategoriju", "-3");
         if (!listaKategorija.contains(dodajKategoriju)) {
@@ -105,15 +118,6 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaPitanja.add(new Pitanje("Dodaj pitanje", "", "", null));
             }
         }
-
-        adapterPitanja = new ElementiKvizaAdapter(this, R.layout.row_view, listaPitanja);       //postavljamo adaptere
-        adapterKategorija = new KategorijaAdapter(this, listaKategorija);
-        adapterMogucaPitanja = new ElementiKvizaAdapter(this, R.layout.row_view, listaMogucihPitanja);
-
-        lvDodanaPitanja.setAdapter(adapterPitanja);
-        spKategorije.setAdapter(adapterKategorija);
-        lvMogucaPitanja.setAdapter(adapterMogucaPitanja);
-
         spKategorije.setSelection(positionKategorija);
 
         spKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {                 // spinner listener
@@ -202,12 +206,14 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                     InsertUBazu insertUBazu1 = new InsertUBazu();
 
-                    insertUBazu1.setToken(token);
-                    insertUBazu1.setMethod("POST");
-                    insertUBazu1.setNazivKolekcije("Kategorije");
-                    insertUBazu1.setKategorija(trenutniKviz.getKategorija());
-                    insertUBazu1.setKviz(trenutniKviz);
-                    insertUBazu1.execute();
+                    if (!listaKategorija.contains(trenutniKviz.getKategorija())) {
+                        insertUBazu1.setToken(token);
+                        insertUBazu1.setMethod("POST");
+                        insertUBazu1.setNazivKolekcije("Kategorije");
+                        insertUBazu1.setKategorija(trenutniKviz.getKategorija());
+                        insertUBazu1.setKviz(trenutniKviz);
+                        insertUBazu1.execute();
+                    }
 
 
                     setResult(RESULT_OK, returnIntent);
@@ -357,6 +363,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         finish();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void initialize() {
 
         spKategorije = findViewById(R.id.spKategorije);
@@ -375,14 +382,21 @@ public class DodajKvizAkt extends AppCompatActivity {
         listaKvizova = intent.getParcelableArrayListExtra("Kvizovi");
         trenutnaKategorija = intent.getParcelableExtra("Trenutna kategorija");
         listaPitanja = intent.getParcelableArrayListExtra("Pitanja kviza");
+        listaMogucihPitanja = intent.getParcelableArrayListExtra("Moguca pitanja");
 
-        fetchPitanjaBaza = new FetchPitanjaBaza();
-        fetchPitanjaBaza.setNazivKolekcije("Pitanja");
-        fetchPitanjaBaza.setKviz(trenutniKviz);
-        fetchPitanjaBaza.execute();
+        trenutniKviz.setKategorija(trenutnaKategorija);
+        trenutniKviz.setPitanja(listaPitanja);
 
-        listaMogucihPitanja = fetchPitanjaBaza.getMogucaPitanja();
+        listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
+        listaPitanja.add(new Pitanje("Dodaj pitanje", "", "", null));
 
+
+        ArrayList<String> naziviPitanjaTrenutnog = new ArrayList<>();
+        for (Pitanje pitanje : trenutniKviz.getPitanja()) {
+            naziviPitanjaTrenutnog.add(pitanje.getNaziv());
+        }
+
+        listaMogucihPitanja.removeIf(pitanje -> naziviPitanjaTrenutnog.contains(pitanje.getNaziv()));
 
     }
 
