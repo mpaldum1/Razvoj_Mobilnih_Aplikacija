@@ -117,7 +117,7 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
             switch (nazivKolekcije) {
 
                 case "Kvizovi":
-                    if (kviz == null || kviz.getNaziv() == null) break;
+                    if (kviz == null || kviz.getNaziv() == null || kviz.getNaziv().equals("")) break;
 
                     Log.e("link", urlString);
 

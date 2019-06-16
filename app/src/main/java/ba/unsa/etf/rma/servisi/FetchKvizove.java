@@ -116,23 +116,32 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... strings) {
 
-        upit = "{\n" +
-                "    \"structuredQuery\": {\n" +
-                "        \"where\" : {\n" +
-                "            \"fieldFilter\" : { \n" +
-                "                \"field\": {\"fieldPath\": \"idKategorije\"}, \n" +
-                "                \"op\":\"EQUAL\", \n" +
-                "                \"value\": {\"stringValue\": \"" + idKategorije + "\"}\n" +
-                "            }\n" +
-                "        },\n" +
-                "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
-                "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
-                "       \"limit\": 1000 \n" +
-                "    }\n" +
-                "}";
+        if (idKategorije.equals("Svi")) {
+            upit = "{\n" +
+                    "    \"structuredQuery\": {\n" +
+                    "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
+                    "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
+                    "       \"limit\": 1000 \n" +
+                    "    }\n" +
+                    "}";
 
-
-        urlString = "https://firestore.googleapis.com/v1/projects/" + projectID +"/databases/(default)/documents:runQuery?access_token="
+        } else {
+            upit = "{\n" +
+                    "    \"structuredQuery\": {\n" +
+                    "        \"where\" : {\n" +
+                    "            \"fieldFilter\" : { \n" +
+                    "                \"field\": {\"fieldPath\": \"idKategorije\"}, \n" +
+                    "                \"op\":\"EQUAL\", \n" +
+                    "                \"value\": {\"stringValue\": \"" + idKategorije + "\"}\n" +
+                    "            }\n" +
+                    "        },\n" +
+                    "        \"select\": { \"fields\": [ {\"fieldPath\": \"idKategorije\"}, {\"fieldPath\": \"naziv\"}, {\"fieldPath\": \"pitanja\"}] },\n" +
+                    "        \"from\": [{\"collectionId\": \"Kvizovi\"}],\n" +
+                    "       \"limit\": 1000 \n" +
+                    "    }\n" +
+                    "}";
+        }
+        urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/(default)/documents:runQuery?access_token="
                 + token;
 
         try {
@@ -145,20 +154,20 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
             request.setRequestProperty("Content-Type", "application/json; utf-8");
             request.setRequestProperty("Accept", "application/json");
 
+            String rezultat;
+            if (idKategorije.equals("Svi")) {
+                try (OutputStream os = request.getOutputStream()) {
+                    byte[] input = upit.getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
 
+                InputStream in = request.getInputStream();
+                rezultat = "{\"documents\": " + (FetchPitanjaBaza.streamToStringConvertor(in)) + "}";
+                JSONObject jsonObject = new JSONObject(rezultat);
+                JSONArray items = jsonObject.getJSONArray("documents");
+                kvizovi = fetchKvizoveBaze(items);
 
-            try (OutputStream os = request.getOutputStream()) {
-                byte[] input = upit.getBytes("utf-8");
-                os.write(input, 0, input.length);
             }
-
-
-            InputStream in = request.getInputStream();
-            String rezultat = "{\"documents\": " + (FetchPitanjaBaza.streamToStringConvertor(in)) + "}";
-            JSONObject jsonObject = new JSONObject(rezultat);
-            JSONArray items = jsonObject.getJSONArray("documents");
-            kvizovi = fetchKvizoveBaze(items);
-
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {

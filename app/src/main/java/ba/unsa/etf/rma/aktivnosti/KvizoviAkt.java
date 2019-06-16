@@ -80,7 +80,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
 
         dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
-        listaKvizova.add(dodajKviz);
+        if (!listaKvizova.contains(dodajKviz))
+            listaKvizova.add(dodajKviz);
 
 
         int orientation = getResources().getConfiguration().orientation;
@@ -126,7 +127,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                                     filterListKvizova.add(currentKviz);
                                 }
                             }
-                            filterListKvizova.add(dodajKviz);
+                            if (!filterListKvizova.contains(dodajKviz))
+                                filterListKvizova.add(dodajKviz);
                             adapterKviz.notifyDataSetChanged();
                         }
                     }
@@ -291,19 +293,22 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                             }
                         }
                         FetchKvizove fetchKvizove = new FetchKvizove() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
                             @Override
                             protected void onPostExecute(Void aVoid) {
                                 listaKvizova.addAll(getKvizovi());
                                 filterListKvizova.addAll(getKvizovi());
-                                filterListKvizova.add(dodajKviz);
+                                if (!filterListKvizova.contains(dodajKviz))
+                                    filterListKvizova.add(dodajKviz);
                                 adapterKviz.notifyDataSetChanged();
                             }
                         };
-                        fetchKvizove.setIdKategorije(" Geografija");
                         fetchKvizove.setMogucaPitanja(listaPitanja);
                         fetchKvizove.setKategorije(getKategorije());
+                        fetchKvizove.setIdKategorije("Svi");
                         fetchKvizove.setKvizovi(listaKvizova);
                         fetchKvizove.execute();
+
                     }
                 };
                 fetchPitanjaBaza.execute();
