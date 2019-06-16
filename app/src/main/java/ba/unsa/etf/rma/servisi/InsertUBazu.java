@@ -102,9 +102,12 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
         try {
             url = new URL(urlString);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
-            request.setDoOutput(true);
+
             request.setRequestMethod(method);
 
+            if (!method.equals("PATCH")) {
+                request.setDoOutput(true);
+            }
             request.setRequestProperty("Content-Type", "application/json; utf-8");
             request.setRequestProperty("Accept", "application/json");
 
@@ -117,7 +120,8 @@ public class InsertUBazu extends AsyncTask<String, Integer, Void> {
             switch (nazivKolekcije) {
 
                 case "Kvizovi":
-                    if (kviz == null || kviz.getNaziv() == null || kviz.getNaziv().equals("")) break;
+                    if (kviz == null || kviz.getNaziv() == null || kviz.getNaziv().equals(""))
+                        break;
 
                     Log.e("link", urlString);
 

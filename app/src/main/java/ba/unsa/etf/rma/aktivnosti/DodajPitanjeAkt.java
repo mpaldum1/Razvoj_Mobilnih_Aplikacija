@@ -96,6 +96,7 @@ public class DodajPitanjeAkt extends AppCompatActivity {
                     listaPitanja.add(povratnoPitanje);
                     Intent returnIntent = new Intent();
                     returnIntent.putExtra("Povratno pitanje", povratnoPitanje);
+                    returnIntent.putExtra("Odgovori", listaOdgovora);
 
                     setResult(RESULT_OK, returnIntent);
                     InsertUBazu insertUBazu = new InsertUBazu();

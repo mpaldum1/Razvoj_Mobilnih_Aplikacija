@@ -2,6 +2,7 @@ package ba.unsa.etf.rma.aktivnosti;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -58,6 +59,10 @@ public class DodajKvizAkt extends AppCompatActivity {
     private Kategorija trenutnaKategorija;
     private Kategorija dodajKategoriju;
     private FetchPitanjaBaza fetchPitanjaBaza;
+
+    private ArrayList<String> povratniOdgovori = new ArrayList<>();
+
+    private Boolean isPatch = false;
 
 
     private static final int READ_REQUEST_CODE = 42;
@@ -204,11 +209,16 @@ public class DodajKvizAkt extends AppCompatActivity {
                     returnIntent.putExtra("Povratne kategorije", listaKategorija);
                     returnIntent.putExtra("Povratna pitanja", listaPitanja);
 
+
                     InsertUBazu insertUBazu1 = new InsertUBazu();
 
                     if (!listaKategorija.contains(trenutniKviz.getKategorija())) {
                         insertUBazu1.setToken(token);
-                        insertUBazu1.setMethod("POST");
+                        if (isPatch) {
+                            insertUBazu1.setMethod("PATCH");
+                        } else {
+                            insertUBazu1.setMethod("POST");
+                        }
                         insertUBazu1.setNazivKolekcije("Kategorije");
                         insertUBazu1.setKategorija(trenutniKviz.getKategorija());
                         insertUBazu1.setKviz(trenutniKviz);
@@ -243,6 +253,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         if (requestCode == 3) {                                 // povratak iz dodaj pitanje aktivnost
             if (resultCode == RESULT_OK) {
                 povratnoPitanje = data.getParcelableExtra("Povratno pitanje");
+                povratniOdgovori = data.getStringArrayListExtra("Odgovori");
                 Pitanje zamjena = listaPitanja.get(listaPitanja.size() - 1);
 
                 listaPitanja.set(listaPitanja.size() - 1, povratnoPitanje);
@@ -383,11 +394,13 @@ public class DodajKvizAkt extends AppCompatActivity {
         trenutnaKategorija = intent.getParcelableExtra("Trenutna kategorija");
         listaPitanja = intent.getParcelableArrayListExtra("Pitanja kviza");
         listaMogucihPitanja = intent.getParcelableArrayListExtra("Moguca pitanja");
+        isPatch = intent.getBooleanExtra("PATCH", false);
 
         trenutniKviz.setKategorija(trenutnaKategorija);
         trenutniKviz.setPitanja(listaPitanja);
 
-        listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
+        if (listaPitanja != null)
+            listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
         listaPitanja.add(new Pitanje("Dodaj pitanje", "", "", null));
 
 
@@ -485,13 +498,13 @@ public class DodajKvizAkt extends AppCompatActivity {
                 if (linePosition == 0) {                                                             // prvi red datoteke
 
                     if (lineFile.length != 3) {
-                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
+                        dialogIspis("Datoteka kviza kojeg importujete nema ispravan format!", this);
                         return false;
                     }
 
                     final String potvrda = lineFile[0];
                     if (listaKvizova.stream().anyMatch(kviz -> kviz.getNaziv().equals(potvrda))) {         // imamo li vec isti kviz
-                        dialogValidation("Kviz kojeg importujete već postoji!");
+                        dialogIspis("Kviz kojeg importujete već postoji!", this);
                         return false;
                     }
 
@@ -500,7 +513,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
 
                     if (brojLinija - 1 != brojPitanja) {
-                        dialogValidation("Kviz kojeg importujete ima neispravan broj pitanja!");
+                        dialogIspis("Kviz kojeg importujete ima neispravan broj pitanja!", this);
                         return false;
                     }
 
@@ -510,21 +523,21 @@ public class DodajKvizAkt extends AppCompatActivity {
                     int tacanOdgovor = Integer.parseInt(lineFile[2].replaceAll("\\s+", ""));
 
                     if (lineFile.length < 4) {
-                        dialogValidation("Datoteka kviza kojeg importujete nema ispravan format!");
+                        dialogIspis("Datoteka kviza kojeg importujete nema ispravan format!", this);
                         return false;
                     }
                     if (brojOdgovora + 3 != lineFile.length) {
-                        dialogValidation("Kviz kojeg importujete ima neispravan broj odgovora!");
+                        dialogIspis("Kviz kojeg importujete ima neispravan broj odgovora!", this);
                         return false;
                     }
                     if (tacanOdgovor < 0 || tacanOdgovor >= lineFile.length - 3) {
-                        dialogValidation("Kviz kojeg importujete ima neispravan index tačnog odgovora!");
+                        dialogIspis("Kviz kojeg importujete ima neispravan index tačnog odgovora!", this);
                         return false;
                     }
                     final String nazivTrenutnogPitanja = lineFile[0];
                     if (listaPitanja.stream().anyMatch(pitanje -> pitanje.getNaziv().equals(nazivTrenutnogPitanja))
                             || naziviPitanjaUDatoteci.contains(nazivTrenutnogPitanja)) {
-                        dialogValidation("U datoteci se nalaze postojeća pitanja!");
+                        dialogIspis("U datoteci se nalaze postojeća pitanja!", this);
                         return false;
                     }
 
@@ -532,7 +545,7 @@ public class DodajKvizAkt extends AppCompatActivity {
 
                     for (int i = 3; i < lineFile.length; i++) {
                         if (listaOdgovora.contains(lineFile[i])) {
-                            dialogValidation("Pitanje u kvizu ima iste odgovore!");
+                            dialogIspis("Pitanje u kvizu ima iste odgovore!", this);
                             return false;
                         }
                         listaOdgovora.add(lineFile[i]);
@@ -552,8 +565,8 @@ public class DodajKvizAkt extends AppCompatActivity {
         return result;
     }
 
-    private void dialogValidation(String message) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+    public static void dialogIspis(String message, Context context) {
+        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
         alertDialog.setTitle("Upozorenje!");
         alertDialog.setMessage(message);
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",

@@ -127,7 +127,6 @@ public class FetchKvizove extends AsyncTask<String, Void, Void> {
         return kvizovi;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected Void doInBackground(String... strings) {
 

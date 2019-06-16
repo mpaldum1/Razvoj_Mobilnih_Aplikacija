@@ -67,7 +67,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     static public String projectID = "rmaspirala-1bc9b";
 
     private InsertUBazu insertUBazu = new InsertUBazu();
-    private boolean isPatch = false;
+    private Boolean isPatch = false;
     private ArrayList<String> naziviMogucihPitanja = new ArrayList<>();
     private FetchKategorijeBaza fetchKategorijeBaza;
 
@@ -155,7 +155,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     Kviz trenutni = adapterKviz.getItem(position);
 
-                    isPatch = true;
+                    if(!trenutni.getNaziv().equals("Dodaj kviz"))
+                        isPatch = true;
 
                     Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
                     intent.putExtra("Pressed kviz", trenutni);
@@ -165,6 +166,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     intent.putExtra("Pitanja kviza", trenutni.getPitanja());
                     intent.putExtra("Token", token);
                     intent.putExtra("Moguca pitanja", listaPitanja);
+                    intent.putExtra("PATCH", isPatch);
                     startActivityForResult(intent, 1);
 
                     return true;
