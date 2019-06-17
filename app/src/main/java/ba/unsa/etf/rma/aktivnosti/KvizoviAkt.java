@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -81,11 +84,13 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     private FetchKategorijeBaza fetchKategorijeBaza;
 
     private boolean calendarHasPermssion = false;
+    private boolean isConnected = false;
     private int minuteDoEventa;
 
     private Context context;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -96,6 +101,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
         dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
         calendarHasPermssion = doIHavePermission(1, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR);
+        isConnected = connectionCheck();
 
         int orientation = getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -169,21 +175,28 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
             lwkvizovi.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    Kviz trenutni = adapterKviz.getItem(position);
+                    isConnected = connectionCheck();
+                    if (isConnected) {
+                        Kviz trenutni = adapterKviz.getItem(position);
 
-                    if (!trenutni.getNaziv().equals("Dodaj kviz"))
-                        isPatch = true;
+                        if (!trenutni.getNaziv().equals("Dodaj kviz"))
+                            isPatch = true;
 
-                    Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
-                    intent.putExtra("Pressed kviz", trenutni);
-                    intent.putExtra("Moguce kategorije", listaKategorija);
-                    intent.putExtra("Kvizovi", listaKvizova);
-                    intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
-                    intent.putExtra("Pitanja kviza", trenutni.getPitanja());
-                    intent.putExtra("Token", token);
-                    intent.putExtra("Moguca pitanja", listaPitanja);
-                    intent.putExtra("PATCH", isPatch);
-                    startActivityForResult(intent, 1);
+                        Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                        intent.putExtra("Pressed kviz", trenutni);
+                        intent.putExtra("Moguce kategorije", listaKategorija);
+                        intent.putExtra("Kvizovi", listaKvizova);
+                        intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
+                        if (trenutni.getPitanja() == null)
+                            trenutni.setPitanja(new ArrayList<>());
+                        intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                        intent.putExtra("Token", token);
+                        intent.putExtra("Moguca pitanja", listaPitanja);
+                        intent.putExtra("PATCH", isPatch);
+                        startActivityForResult(intent, 1);
+                    } else {
+                        DodajKvizAkt.dialogIspis("Zabranjeno editovanje/dodavanje kvizova u offline režimu!", getContext());
+                    }
 
                     return true;
                 }
@@ -197,21 +210,37 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     Intent intent = null;
 
                     if (trenutni.getNaziv().equals("Dodaj kviz")) {
-                        intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
-                        intent.putExtra("Pressed kviz", trenutni);
-                        intent.putExtra("Moguce kategorije", listaKategorija);
-                        intent.putExtra("Kvizovi", listaKvizova);
-                        intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
-                        intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                        isConnected = connectionCheck();
+                        if (isConnected) {
+                            intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
+                            intent.putExtra("Pressed kviz", trenutni);
+                            intent.putExtra("Moguce kategorije", listaKategorija);
+                            intent.putExtra("Kvizovi", listaKvizova);
+                            intent.putExtra("Trenutna kategorija", trenutni.getKategorija());
+                            if (trenutni.getPitanja() == null)
+                                trenutni.setPitanja(new ArrayList<>());
+                            intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                            intent.putExtra("Moguca pitanja", listaPitanja);
+                            startActivityForResult(intent, 1);
+                        } else {
+                            DodajKvizAkt.dialogIspis("Zabranjeno dodavanje kvizova u offline režimu!", getContext());
+                        }
 
-                        startActivityForResult(intent, 1);
+
                     } else {
                         if (!trenutni.getPitanja().isEmpty() && hasEventInYMinutes(trenutni)) {
-                            DodajKvizAkt.dialogIspis("Imate događaj u kalendaru za " + minuteDoEventa +          // otvaramo Alert dialog
-                                    " minuta! ", getContext());
+                            if(minuteDoEventa != 0) {
+                                DodajKvizAkt.dialogIspis("Imate događaj u kalendaru za " + minuteDoEventa +          // otvaramo Alert dialog
+                                        " minuta! ", getContext());
+                            }
+                            else {
+                                DodajKvizAkt.dialogIspis("Imate događaj u toku!", getContext());
+                            }
                         } else {
                             intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
                             intent.putExtra("Odabrani kviz", trenutni);
+                            if (trenutni.getPitanja() == null)
+                                trenutni.setPitanja(new ArrayList<>());
                             intent.putExtra("Pitanja kviza", trenutni.getPitanja());
                             startActivityForResult(intent, 2);
                         }
@@ -221,7 +250,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
 
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -307,7 +335,8 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         lwkvizovi.setAdapter(adapterKviz);
         spPostojeceKategorije.setAdapter(adapterKategorija);
 
-        new TokenGenerator(this, token).execute();
+        if (isConnected)
+            new TokenGenerator(this, token).execute();
 
         fetchKategorijeBaza = new FetchKategorijeBaza() {
             @Override
@@ -335,6 +364,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                                 if (!listaKvizova.contains(dodajKviz))
                                     listaKvizova.add(dodajKviz);
 
+
                                 adapterKviz.notifyDataSetChanged();
                                 spPostojeceKategorije.setSelection(1);
                             }
@@ -351,6 +381,25 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
             }
         };
         fetchKategorijeBaza.execute();
+    }
+
+    public static boolean moguDodatiPitanje;
+    public static boolean moguDodatiKategoriju;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+        // provjera konekcije
+    boolean connectionCheck() {
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
+
+        if (networkCapabilities != null)
+            return moguDodatiKategoriju = moguDodatiPitanje =
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+        return moguDodatiKategoriju = moguDodatiPitanje = false;
+
     }
 
     @Override
@@ -484,7 +533,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     return true;
                 }
                 if (start > currentTimeMS && start < currentTimeMS + brojSekundi * 1000) {
-                    minuteDoEventa = (int) ((start - currentTimeMS) / (60. * 1000));
+                    minuteDoEventa = (int) ((start - currentTimeMS) / (60. * 1000) + 0.5) ;
                     if (minuteDoEventa < dajBrojMinuta(trenutniKviz))
                         return true;
                 }

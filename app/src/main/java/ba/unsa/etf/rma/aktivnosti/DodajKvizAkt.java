@@ -5,6 +5,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,9 +38,13 @@ import ba.unsa.etf.rma.klase.Pitanje;
 import ba.unsa.etf.rma.servisi.FetchPitanjaBaza;
 import ba.unsa.etf.rma.servisi.InsertUBazu;
 
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.moguDodatiKategoriju;
+import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.moguDodatiPitanje;
 import static ba.unsa.etf.rma.aktivnosti.KvizoviAkt.token;
 
 public class DodajKvizAkt extends AppCompatActivity {
+
+    private Context context;
 
     private Spinner spKategorije;
     private ListView lvDodanaPitanja;
@@ -79,6 +86,7 @@ public class DodajKvizAkt extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_kviz_akt);
+        context = this;
 
         initialize();
         //pritisnuto neko pitanje
@@ -129,16 +137,21 @@ public class DodajKvizAkt extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
+                connectionCheck();
 
                 if (trenutnaKategorija.getId().equals("-1")) {
                     // empty
                 } else {
                     if (trenutnaKategorija.getId().equals("-3")) {                                            // Pritisnuto "Dodaj Kategoriju"
 
-                        Intent intent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
-                        intent.putExtra("Pressed kategorije", listaKategorija);
-                        startActivityForResult(intent, 2);
-
+                        if (moguDodatiKategoriju) {
+                            Intent intent = new Intent(DodajKvizAkt.this, DodajKategorijuAkt.class);
+                            intent.putExtra("Pressed kategorije", listaKategorija);
+                            startActivityForResult(intent, 2);
+                        } else {
+                            DodajKvizAkt.dialogIspis("Zabranjeno dodavanje kategorija u offline režimu!", getContext());
+                            spKategorije.setSelection(0);
+                        }
                     }
                 }
             }
@@ -155,12 +168,18 @@ public class DodajKvizAkt extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Pitanje temp = (Pitanje) parent.getItemAtPosition(position);
+                connectionCheck();
 
                 if (temp.getNaziv().equals("Dodaj pitanje")) {
 
-                    Intent intent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
-                    intent.putExtra("Lista pitanja", listaPitanja);
-                    startActivityForResult(intent, 3);
+                    if (moguDodatiPitanje) {
+                        Intent intent = new Intent(DodajKvizAkt.this, DodajPitanjeAkt.class);
+                        intent.putExtra("Lista pitanja", listaPitanja);
+                        startActivityForResult(intent, 3);
+                    } else {
+                        DodajKvizAkt.dialogIspis("Zabranjeno dodavanje pitanja u offline režimu!", getContext());
+
+                    }
 
                 } else {
                     listaPitanja.remove(adapterPitanja.getItem(position));
@@ -180,6 +199,7 @@ public class DodajKvizAkt extends AppCompatActivity {
                 listaMogucihPitanja.remove(adapterMogucaPitanja.getItem(position));
                 adapterMogucaPitanja.notifyDataSetChanged();
 
+
                 if (!listaPitanja.contains(temp)) {
                     Pitanje dodaj = listaPitanja.get(listaPitanja.size() - 1);
                     listaPitanja.remove(listaPitanja.size() - 1);
@@ -193,6 +213,7 @@ public class DodajKvizAkt extends AppCompatActivity {
         btnDodajKviz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                boolean connectionFlag = connectionCheck();
 
                 if (validationCkeckNaziv() && validationCheckKategorija()) {
 
@@ -201,18 +222,18 @@ public class DodajKvizAkt extends AppCompatActivity {
                     trenutniKviz.setNaziv(etNaziv.getText().toString());
                     trenutniKviz.setPitanja(listaPitanja);
                     trenutniKviz.setKategorija(trenutnaKategorija);
+                    listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
 
                     adapterPitanja.notifyDataSetChanged();
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra("Povratni kviz", trenutniKviz);
-                    returnIntent.putExtra("Povratna kategorija", trenutnaKategorija);
-                    returnIntent.putExtra("Povratne kategorije", listaKategorija);
-                    returnIntent.putExtra("Povratna pitanja", listaPitanja);
+                    if (connectionFlag) {
+                        Intent returnIntent = new Intent();
+                        returnIntent.putExtra("Povratni kviz", trenutniKviz);
+                        returnIntent.putExtra("Povratna kategorija", trenutnaKategorija);
+                        returnIntent.putExtra("Povratne kategorije", listaKategorija);
+                        returnIntent.putExtra("Povratna pitanja", listaPitanja);
 
 
-                    InsertUBazu insertUBazu1 = new InsertUBazu();
-
-                    if (!listaKategorija.contains(trenutniKviz.getKategorija())) {
+                        InsertUBazu insertUBazu1 = new InsertUBazu();
                         insertUBazu1.setToken(token);
                         if (isPatch) {
                             insertUBazu1.setMethod("PATCH");
@@ -223,11 +244,13 @@ public class DodajKvizAkt extends AppCompatActivity {
                         insertUBazu1.setKategorija(trenutniKviz.getKategorija());
                         insertUBazu1.setKviz(trenutniKviz);
                         insertUBazu1.execute();
+
+
+                        setResult(RESULT_OK, returnIntent);
+                        finish();
+                    } else {
+                        DodajKvizAkt.dialogIspis("Zabranjeno dodavanje kviza u offline režimu!", getContext());
                     }
-
-
-                    setResult(RESULT_OK, returnIntent);
-                    finish();
                 }
 
             }
@@ -364,6 +387,10 @@ public class DodajKvizAkt extends AppCompatActivity {
         }
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     @Override
     public void onBackPressed() {
 
@@ -393,24 +420,33 @@ public class DodajKvizAkt extends AppCompatActivity {
         listaKvizova = intent.getParcelableArrayListExtra("Kvizovi");
         trenutnaKategorija = intent.getParcelableExtra("Trenutna kategorija");
         listaPitanja = intent.getParcelableArrayListExtra("Pitanja kviza");
+        if (listaPitanja == null) listaPitanja = new ArrayList<>();
         listaMogucihPitanja = intent.getParcelableArrayListExtra("Moguca pitanja");
         isPatch = intent.getBooleanExtra("PATCH", false);
 
         trenutniKviz.setKategorija(trenutnaKategorija);
         trenutniKviz.setPitanja(listaPitanja);
 
-        if (listaPitanja != null)
-            listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
-        listaPitanja.add(new Pitanje("Dodaj pitanje", "", "", null));
+
+        if (listaPitanja != null) {
+            if (listaPitanja.size() > 1) {
+                listaPitanja.removeIf(pitanje -> pitanje.getNaziv().equals("Dodaj pitanje"));
+            }
+            listaPitanja.add(new Pitanje("Dodaj pitanje", "", "", null));
+        }
 
 
         ArrayList<String> naziviPitanjaTrenutnog = new ArrayList<>();
-        for (Pitanje pitanje : trenutniKviz.getPitanja()) {
-            naziviPitanjaTrenutnog.add(pitanje.getNaziv());
+        if (listaPitanja.size() > 1) {
+            for (Pitanje pitanje : trenutniKviz.getPitanja()) {
+                naziviPitanjaTrenutnog.add(pitanje.getNaziv());
+            }
+
+            listaMogucihPitanja.removeIf(pitanje -> naziviPitanjaTrenutnog.contains(pitanje.getNaziv()));
         }
-
-        listaMogucihPitanja.removeIf(pitanje -> naziviPitanjaTrenutnog.contains(pitanje.getNaziv()));
-
+        if (listaMogucihPitanja == null) {
+            listaMogucihPitanja = new ArrayList<>();
+        }
     }
 
     private boolean validationCkeckNaziv() {
@@ -604,5 +640,20 @@ public class DodajKvizAkt extends AppCompatActivity {
         }
 
         return counter;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    boolean connectionCheck() {
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
+
+        if (networkCapabilities != null)
+            return moguDodatiKategoriju = moguDodatiPitanje =
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+        return moguDodatiKategoriju = moguDodatiPitanje = false;
+
     }
 }
