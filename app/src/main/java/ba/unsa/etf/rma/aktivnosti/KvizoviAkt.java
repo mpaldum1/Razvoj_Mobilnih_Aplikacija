@@ -483,9 +483,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     minuteDoEventa = 0;                         // event se upravo desava
                     return true;
                 }
-                if (start > currentTimeMS && start < currentTimeMS + brojSekundi * 60 * 1000) {
-                    minuteDoEventa = (int) ((start - currentTimeMS) / (60 * 1000));
-                    return true;
+                if (start > currentTimeMS && start < currentTimeMS + brojSekundi * 1000) {
+                    minuteDoEventa = (int) ((start - currentTimeMS) / (60. * 1000));
+                    if (minuteDoEventa < dajBrojMinuta(trenutniKviz))
+                        return true;
                 }
                 cursor.moveToNext();
             }
