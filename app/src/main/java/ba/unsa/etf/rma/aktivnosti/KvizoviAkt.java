@@ -120,22 +120,24 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                     trenutnaKategorija = (Kategorija) parent.getItemAtPosition(position);
                     String clickedKategorijaNaziv = trenutnaKategorija.getNaziv();
 
-                    FetchKvizove fetchKvizove = new FetchKvizove() {
-                        @RequiresApi(api = Build.VERSION_CODES.N)
-                        @Override
-                        protected void onPostExecute(Void aVoid) {
+                    if(!trenutnaKategorija.getNaziv().equals("Svi")) {
+                        FetchKvizove fetchKvizove = new FetchKvizove() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
 
-                            helperLista = new ArrayList<>(getKvizovi());
-                            filterListKvizova.removeIf(kviz -> !helperLista.contains(kviz));
-                            adapterKviz.notifyDataSetChanged();
+                                helperLista = new ArrayList<>(getKvizovi());
+                                filterListKvizova.removeIf(kviz -> !helperLista.contains(kviz));
+                                adapterKviz.notifyDataSetChanged();
 
-                        }
-                    };
-                    fetchKvizove.setMogucaPitanja(listaPitanja);
-                    fetchKvizove.setKategorije(listaKategorija);
-                    fetchKvizove.setIdKategorije(trenutnaKategorija.getNaziv());
-                    fetchKvizove.setKvizovi(listaKvizova);
-                    fetchKvizove.execute();
+                            }
+                        };
+                        fetchKvizove.setMogucaPitanja(listaPitanja);
+                        fetchKvizove.setKategorije(listaKategorija);
+                        fetchKvizove.setIdKategorije(trenutnaKategorija.getNaziv());
+                        fetchKvizove.setKvizovi(listaKvizova);
+                        fetchKvizove.execute();
+                    }
 
                     if (trenutnaKategorija.getId().equals("-1")) {                                              //pritisnuto Kategorije
                         // empty
@@ -331,6 +333,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
         adapterKviz = new KvizAdapter(this, R.layout.row_view, filterListKvizova);                  // postavljamo adaptere
         adapterKategorija = new KategorijaAdapter(this, listaKategorija);
+        filterListKvizova.add(dodajKviz);
 
         lwkvizovi.setAdapter(adapterKviz);
         spPostojeceKategorije.setAdapter(adapterKategorija);
@@ -343,7 +346,6 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
             protected void onPostExecute(Void aVoid) {
 
                 listaKategorija.addAll(fetchKategorijeBaza.getKategorije());
-                adapterKviz.notifyDataSetChanged();
 
                 FetchPitanjaBaza fetchPitanjaBaza = new FetchPitanjaBaza() {
 
@@ -359,14 +361,18 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                             @RequiresApi(api = Build.VERSION_CODES.N)
                             @Override
                             protected void onPostExecute(Void aVoid) {
-                                listaKvizova.addAll(getKvizovi());
+                                for(Kviz trenutni: getKvizovi()){
+                                    listaKvizova.add(trenutni);
+                                }
+                       //         listaKvizova.addAll(getKvizovi());
+
 
                                 if (!listaKvizova.contains(dodajKviz))
                                     listaKvizova.add(dodajKviz);
 
-
                                 adapterKviz.notifyDataSetChanged();
                                 spPostojeceKategorije.setSelection(1);
+
                             }
                         };
                         fetchKvizove.setMogucaPitanja(listaPitanja);
