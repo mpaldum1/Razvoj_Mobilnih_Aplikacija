@@ -76,10 +76,10 @@ public class IgrajKvizAkt extends AppCompatActivity implements PitanjeFrag.OnFra
 
             alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
             Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.SECOND, (int) (dajBrojMinuta() * 60));
-            int test = (int) (dajBrojMinuta());
+            calendar.add(Calendar.SECOND, (int) (dajBrojMinuta(trenutniKviz) * 60));
+     //       int test = (int) (dajBrojMinuta());
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-            Toast.makeText(this, "Alarm se okida za " + dajBrojMinuta()  + " minuta",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Alarm se okida za " + dajBrojMinuta(trenutniKviz)  + " minuta",Toast.LENGTH_LONG).show();
         }
 
     }
@@ -113,7 +113,7 @@ public class IgrajKvizAkt extends AppCompatActivity implements PitanjeFrag.OnFra
         return context;
     }
 
-    private double dajBrojMinuta() {
+    public static double dajBrojMinuta(Kviz trenutniKviz) {
         int brojPitanja = trenutniKviz.getPitanja().size();
         if (brojPitanja % 2 == 1)
             return brojPitanja / 2. + 0.5;

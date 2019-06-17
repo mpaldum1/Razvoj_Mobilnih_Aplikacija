@@ -1,16 +1,22 @@
 package ba.unsa.etf.rma.aktivnosti;
 
+import android.Manifest;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +48,9 @@ import ba.unsa.etf.rma.servisi.FetchKvizove;
 import ba.unsa.etf.rma.servisi.FetchPitanjaBaza;
 import ba.unsa.etf.rma.servisi.InsertUBazu;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static ba.unsa.etf.rma.aktivnosti.IgrajKvizAkt.dajBrojMinuta;
+
 
 public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmentInteractionListener, OnFragmentInteractionListener {
 
@@ -71,18 +80,24 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
     private ArrayList<String> naziviMogucihPitanja = new ArrayList<>();
     private FetchKategorijeBaza fetchKategorijeBaza;
 
+    private boolean calendarHasPermssion = false;
+    private int minuteDoEventa;
+
+    private Context context;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kvizovi_akt);
+        context = this;
 
 
         dodajKviz = new Kviz("Dodaj kviz", null, new Kategorija("", Integer.toString(R.drawable.plus)));
+        calendarHasPermssion = doIHavePermission(1, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR);
 
         int orientation = getResources().getConfiguration().orientation;
-
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.e("Prvi", "Usao u landscape");
             fragmentCall();
@@ -90,6 +105,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         } else {
 
             init();
+
 
             spPostojeceKategorije.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {          // spinner listener
                 @Override
@@ -155,7 +171,7 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                     Kviz trenutni = adapterKviz.getItem(position);
 
-                    if(!trenutni.getNaziv().equals("Dodaj kviz"))
+                    if (!trenutni.getNaziv().equals("Dodaj kviz"))
                         isPatch = true;
 
                     Intent intent = new Intent(KvizoviAkt.this, DodajKvizAkt.class);
@@ -190,10 +206,15 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
                         startActivityForResult(intent, 1);
                     } else {
-                        intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
-                        intent.putExtra("Odabrani kviz", trenutni);
-                        intent.putExtra("Pitanja kviza", trenutni.getPitanja());
-                        startActivityForResult(intent, 2);
+                        if (!trenutni.getPitanja().isEmpty() && hasEventInYMinutes(trenutni)) {
+                            DodajKvizAkt.dialogIspis("Imate događaj u kalendaru za " + minuteDoEventa +          // otvaramo Alert dialog
+                                    " minuta! ", getContext());
+                        } else {
+                            intent = new Intent(KvizoviAkt.this, IgrajKvizAkt.class);
+                            intent.putExtra("Odabrani kviz", trenutni);
+                            intent.putExtra("Pitanja kviza", trenutni.getPitanja());
+                            startActivityForResult(intent, 2);
+                        }
                     }
                 }
             });
@@ -342,6 +363,10 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
 
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     private void fragmentCall() {
         FragmentManager manager = getFragmentManager();
         FrameLayout lijeviFragment = findViewById(R.id.listPlace);
@@ -416,79 +441,66 @@ public class KvizoviAkt extends AppCompatActivity implements ListaFrag.OnFragmen
         }
     }
 
-   /* public class Fetch extends AsyncTask<String, Integer, Void> {
 
-        private String urlString;
-        private final String projectID = "rmaspirala-1bc9b";
-        private String tipKolekcije;
-
-        private FetchKvizove fetchKvizove = new FetchKvizove();
-        private FetchPitanjaBaza fetchPitanjaBaza = new FetchPitanjaBaza();
-        private FetchKategorijeBaza fetchKategorijeBaza = new FetchKategorijeBaza();
-
-        public void setTipKolekcije(String tipKolekcije) {
-            this.tipKolekcije = tipKolekcije;
+    private boolean doIHavePermission(int callback, String... permissions) {
+        boolean result = true;
+        for (String temp : permissions) {
+            result = ContextCompat.checkSelfPermission(this, temp) == PERMISSION_GRANTED && result;
         }
-
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            urlString = "https://firestore.googleapis.com/v1/projects/" + projectID + "/databases/" +
-                    "(default)/documents/" + tipKolekcije + "?access_token=" + token;
-
-
-            try {
-                URL request = new URL(urlString);
-                HttpURLConnection urlConnection = (HttpURLConnection) request.openConnection();
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                String result = streamToStringConvertor(inputStream);
-
-                JSONObject jsonObject = new JSONObject(result);
-                JSONArray jsonArray = jsonObject.getJSONArray("documents");
-
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject name = jsonArray.getJSONObject(i);
-                    String id = name.getString("name");
-                    JSONObject kviz = name.getJSONObject("fields");
-                    JSONArray items = kviz.getJSONObject("pitanja").getJSONObject("arrayValue").getJSONArray("values");  //lista pitanja kviza
-                    for (int j = 0; j < items.length(); j++) {
-                        naziviMogucihPitanja.add(items.getJSONObject(j).getString("stringValue"));
-                    }
-                }
-                switch (tipKolekcije) {
-                    case "Kvizovi":
-                        fetchKvizove.fetchKvizoveBaze(jsonArray);
-                        listaKvizova = fetchKvizove.getKvizovi();
-                        if (adapterKviz != null)
-                            adapterKviz.notifyDataSetChanged();
-                        break;
-                    case "Kategorije":
-                        fetchKategorijeBaza.fetchKategorijeBaze(jsonArray);
-                        listaKategorija = fetchKategorijeBaza.getKategorije();
-                        if (adapterKategorija != null)
-                            adapterKategorija.notifyDataSetChanged();
-                        break;
-
-                    case "Pitanja":
-                        fetchPitanjaBaza.fetchPitanjaBaze(jsonArray);
-                        listaPitanja = fetchPitanjaBaza.getMogucaPitanja();
-                        break;
-
-                    default:
-                        break;
-                }
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
+        if (!result) {
+            ActivityCompat.requestPermissions(this, permissions, callback);
         }
-
+        return result;
     }
-    */
 
+    private static final String[] fields = {
+            CalendarContract.Calendars.NAME,
+            CalendarContract.Events.DTSTART,
+            CalendarContract.Events.DTEND,
+            CalendarContract.Events.TITLE
+    };
+
+    private boolean hasEventInYMinutes(Kviz trenutniKviz) {
+        if (!calendarHasPermssion) return false;
+        int brojSekundi = (int) (dajBrojMinuta(trenutniKviz) * 60);
+
+        Cursor cursor = getContentResolver().query(Uri.parse("content://com.android.calendar/events"), fields,
+                null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            ArrayList<String> names = new ArrayList<>();
+            int size = cursor.getCount();
+
+            long currentTimeMS = System.currentTimeMillis();
+
+            for (int i = 0; i < size; i++) {
+                names.add(cursor.getString(3));
+                long start = Long.parseLong(cursor.getString(1));
+                long end = Long.parseLong(cursor.getString(2));
+
+                if (start < currentTimeMS && end > currentTimeMS) {
+                    minuteDoEventa = 0;                         // event se upravo desava
+                    return true;
+                }
+                if (start > currentTimeMS && start < currentTimeMS + brojSekundi * 60 * 1000) {
+                    minuteDoEventa = (int) ((start - currentTimeMS) / (60 * 1000));
+                    return true;
+                }
+                cursor.moveToNext();
+            }
+
+        }
+        return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length != 0 && grantResults[0] == PERMISSION_GRANTED)
+                calendarHasPermssion = true;
+        } else {
+            calendarHasPermssion = false;
+        }
+    }
 }
